@@ -1,0 +1,87 @@
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useMutation } from "@tanstack/react-query";
+import { useState } from "react";
+import { searchLibrary, type LibraryItem } from "@/lib/library.functions";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Search, Sparkles } from "lucide-react";
+
+export const Route = createFileRoute("/_authenticated/search")({
+  component: SearchPage,
+});
+
+function SearchPage() {
+  const [q, setQ] = useState("");
+  const [results, setResults] = useState<LibraryItem[] | null>(null);
+
+  const mut = useMutation({
+    mutationFn: () => searchLibrary({ data: { query: q } }),
+    onSuccess: (r) => setResults(r),
+  });
+
+  return (
+    <div className="mx-auto max-w-4xl">
+      <header className="mb-8">
+        <h1 className="font-display text-4xl font-semibold tracking-tight">Search</h1>
+        <p className="mt-2 text-muted-foreground">
+          Ask in plain language. Lumen looks across titles, transcripts, tags, and notes.
+        </p>
+      </header>
+
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (q.trim()) mut.mutate();
+        }}
+        className="glass flex items-center gap-2 rounded-full p-2"
+      >
+        <div className="pl-3 text-muted-foreground"><Search className="h-4 w-4" /></div>
+        <Input
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          placeholder="e.g. the pasta recipe video, notes on empathy…"
+          className="h-11 flex-1 border-none bg-transparent shadow-none focus-visible:ring-0"
+        />
+        <Button
+          type="submit"
+          disabled={!q.trim() || mut.isPending}
+          className="rounded-full bg-gradient-to-r from-coral to-rose px-5 text-primary-foreground shadow-[var(--shadow-soft)]"
+        >
+          {mut.isPending ? "Looking…" : "Search"}
+        </Button>
+      </form>
+
+      <div className="mt-8">
+        {results === null ? (
+          <div className="glass rounded-3xl p-8 text-center text-sm text-muted-foreground">
+            <Sparkles className="mx-auto mb-2 h-5 w-5 text-coral" />
+            Try “videos about leadership”, “recipe with chicken”, or “lecture about child development”.
+          </div>
+        ) : results.length === 0 ? (
+          <div className="glass rounded-3xl p-8 text-center text-sm text-muted-foreground">
+            Nothing matched. Try different words, or ask Lumen in chat.
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {results.map((r) => (
+              <Link
+                key={r.id}
+                to="/item/$id"
+                params={{ id: r.id }}
+                className="glass block rounded-2xl p-5 transition-all hover:-translate-y-0.5 hover:shadow-[var(--shadow-glow)]"
+              >
+                <div className="text-[11px] uppercase tracking-widest text-muted-foreground">
+                  {r.kind} · {r.source}
+                </div>
+                <div className="mt-1 font-display text-lg font-semibold">{r.title}</div>
+                {r.summary_short && (
+                  <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{r.summary_short}</p>
+                )}
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
