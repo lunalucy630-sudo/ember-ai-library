@@ -29,6 +29,10 @@ function AuthPage() {
   const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
   const [inIframe, setInIframe] = useState(false);
+  const [cookiesEnabled, setCookiesEnabled] = useState<boolean | null>(null);
+  const [popupBlocked, setPopupBlocked] = useState<boolean | null>(null);
+  const [lastError, setLastError] = useState<{ reason: string; raw?: string } | null>(null);
+  const [showDebug, setShowDebug] = useState(false);
 
   // Sanitize `next` to same-origin relative path only.
   const nextPath =
