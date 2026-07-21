@@ -373,16 +373,21 @@ function SignInDebugPanel(props: {
   inIframe: boolean;
   cookiesEnabled: boolean | null;
   popupBlocked: boolean | null;
+  thirdPartyBlocked: boolean | null;
   lastError: { reason: string; raw?: string } | null;
   onOpenInNewTab: () => void;
   onRecheck: () => void;
 }) {
-  const { open, onToggle, inIframe, cookiesEnabled, popupBlocked, lastError, onOpenInNewTab, onRecheck } = props;
+  const {
+    open, onToggle, inIframe, cookiesEnabled, popupBlocked,
+    thirdPartyBlocked, lastError, onOpenInNewTab, onRecheck,
+  } = props;
   const info = lastError ? REASONS[lastError.reason] ?? REASONS.unknown : null;
 
   const checks: Check[] = [
     { label: "Not inside an embedded frame", ok: !inIframe, hint: inIframe ? "Preview runs in an iframe — open in a new tab for reliable OAuth." : undefined },
     { label: "Cookies enabled", ok: cookiesEnabled, hint: cookiesEnabled === false ? "Enable cookies in your browser settings." : undefined },
+    { label: "Cross-site cookies allowed", ok: thirdPartyBlocked === null ? null : !thirdPartyBlocked, hint: thirdPartyBlocked ? "Third-party cookies blocked — using new-tab fallback." : undefined },
     { label: "Popups allowed", ok: popupBlocked === null ? null : !popupBlocked, hint: popupBlocked ? "Allow popups for this site." : undefined },
   ];
 
