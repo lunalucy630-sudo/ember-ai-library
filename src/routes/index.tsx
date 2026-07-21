@@ -15,8 +15,17 @@ function Landing() {
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
-      if (data.user) navigate({ to: "/library" });
-      else setChecking(false);
+      if (data.user) {
+        let next = "/library";
+        try {
+          const stored = sessionStorage.getItem("lumen:next");
+          if (stored && stored.startsWith("/") && !stored.startsWith("//")) next = stored;
+          sessionStorage.removeItem("lumen:next");
+        } catch {
+          /* ignore */
+        }
+        navigate({ to: next });
+      } else setChecking(false);
     });
   }, [navigate]);
 
