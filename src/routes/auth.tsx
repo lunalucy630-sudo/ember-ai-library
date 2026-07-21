@@ -273,6 +273,139 @@ function AuthPage() {
   );
 }
 
+type Check = { label: string; ok: boolean | null; hint?: string };
+
+const REASONS: Record<string, { title: string; fixes: string[] }> = {
+  user_cancelled: {
+    title: "The Google window was closed before you finished signing in.",
+    fixes: [
+      "Click 'Continue with Google' again and pick your account.",
+      "If a popup opened and closed instantly, your browser may be blocking it — use 'Open in new tab' below.",
+    ],
+  },
+  popup_blocked: {
+    title: "Your browser blocked the Google sign-in popup.",
+    fixes: [
+      "Allow popups for this site in your browser's address bar.",
+      "Or click 'Open in a new tab' below to sign in without a popup.",
+    ],
+  },
+  cookies_disabled: {
+    title: "Third-party cookies are disabled.",
+    fixes: [
+      "Enable cookies (especially third-party) for accounts.google.com.",
+      "In Safari: Settings → Privacy → uncheck 'Prevent cross-site tracking'.",
+      "In Chrome: Settings → Privacy and security → Cookies → allow third-party cookies.",
+    ],
+  },
+  network: {
+    title: "The sign-in request couldn't reach Google.",
+    fixes: [
+      "Check your internet connection and try again.",
+      "Disable VPNs, ad-blockers, or strict privacy extensions temporarily.",
+    ],
+  },
+  redirect_uri: {
+    title: "The redirect URL wasn't accepted.",
+    fixes: [
+      "Open this page in a new tab and retry — the preview iframe origin can differ.",
+    ],
+  },
+  unknown: {
+    title: "Google sign-in didn't complete.",
+    fixes: [
+      "Try again, or use 'Open in a new tab' below.",
+      "If it keeps failing, sign in with email and password.",
+    ],
+  },
+};
+
+function SignInDebugPanel(props: {
+  open: boolean;
+  onToggle: () => void;
+  inIframe: boolean;
+  cookiesEnabled: boolean | null;
+  popupBlocked: boolean | null;
+  lastError: { reason: string; raw?: string } | null;
+  onOpenInNewTab: () => void;
+  onRecheck: () => void;
+}) {
+  const { open, onToggle, inIframe, cookiesEnabled, popupBlocked, lastError, onOpenInNewTab, onRecheck } = props;
+  const info = lastError ? REASONS[lastError.reason] ?? REASONS.unknown : null;
+
+  const checks: Check[] = [
+    { label: "Not inside an embedded frame", ok: !inIframe, hint: inIframe ? "Preview runs in an iframe — open in a new tab for reliable OAuth." : undefined },
+    { label: "Cookies enabled", ok: cookiesEnabled, hint: cookiesEnabled === false ? "Enable cookies in your browser settings." : undefined },
+    { label: "Popups allowed", ok: popupBlocked === null ? null : !popupBlocked, hint: popupBlocked ? "Allow popups for this site." : undefined },
+  ];
+
+  return (
+    <div className="mt-3">
+      <button
+        type="button"
+        onClick={onToggle}
+        className="inline-flex w-full items-center justify-center gap-1.5 rounded-full px-3 py-2 text-xs text-muted-foreground hover:text-foreground"
+      >
+        <Info className="h-3.5 w-3.5" />
+        {open ? "Hide sign-in diagnostics" : "Having trouble? Show sign-in diagnostics"}
+        {open ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+      </button>
+
+      {open && (
+        <div className="mt-2 space-y-3 rounded-2xl border border-white/60 bg-white/60 p-4 text-sm backdrop-blur animate-float-in">
+          {info && (
+            <div className="rounded-xl bg-rose/20 p-3">
+              <div className="flex items-start gap-2">
+                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-coral" />
+                <div>
+                  <div className="font-medium text-foreground">{info.title}</div>
+                  <ul className="mt-1.5 list-disc space-y-1 pl-4 text-xs text-muted-foreground">
+                    {info.fixes.map((f) => <li key={f}>{f}</li>)}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div>
+            <div className="mb-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">Environment</div>
+            <ul className="space-y-1.5">
+              {checks.map((c) => (
+                <li key={c.label} className="flex items-start gap-2 text-xs">
+                  {c.ok === true && <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />}
+                  {c.ok === false && <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-coral" />}
+                  {c.ok === null && <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />}
+                  <div>
+                    <div className="text-foreground">{c.label}</div>
+                    {c.hint && <div className="text-muted-foreground">{c.hint}</div>}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            <Button type="button" size="sm" variant="outline" onClick={onRecheck} className="rounded-full text-xs">
+              Re-run checks
+            </Button>
+            <Button type="button" size="sm" variant="outline" onClick={onOpenInNewTab} className="rounded-full text-xs">
+              <ExternalLink className="mr-1 h-3.5 w-3.5" /> Open in new tab
+            </Button>
+          </div>
+
+          {lastError?.raw && (
+            <details className="text-xs text-muted-foreground">
+              <summary className="cursor-pointer">Technical details</summary>
+              <pre className="mt-1.5 overflow-x-auto rounded-lg bg-white/70 p-2 text-[11px]">{lastError.raw}</pre>
+            </details>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+
 function GoogleIcon() {
   return (
     <svg viewBox="0 0 24 24" className="mr-2 h-4 w-4" aria-hidden>
