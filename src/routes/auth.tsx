@@ -28,26 +28,57 @@ function AuthPage() {
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
+  const [inIframe, setInIframe] = useState(false);
+
+  // Sanitize `next` to same-origin relative path only.
+  const nextPath =
+    search.next && search.next.startsWith("/") && !search.next.startsWith("//")
+      ? search.next
+      : "/library";
 
   useEffect(() => {
+    try {
+      setInIframe(window.self !== window.top);
+    } catch {
+      setInIframe(true);
+    }
     supabase.auth.getUser().then(({ data }) => {
-      if (data.user) navigate({ to: "/library" });
+      if (data.user) navigate({ to: nextPath });
     });
-  }, [navigate]);
+  }, [navigate, nextPath]);
+
+  const openInNewTab = () => {
+    const url = new URL(window.location.href);
+    url.searchParams.set("next", nextPath);
+    window.open(url.toString(), "_blank", "noopener,noreferrer");
+  };
 
   const handleGoogle = async () => {
     setBusy(true);
+    // Persist the intended destination so the post-OAuth landing can honor it.
+    try {
+      sessionStorage.setItem("lumen:next", nextPath);
+    } catch {
+      /* ignore */
+    }
     const result = await lovable.auth.signInWithOAuth("google", {
       redirect_uri: window.location.origin,
     });
     if (result.error) {
-      toast.error("Google sign in failed", { description: result.error.message });
+      const msg = result.error.message ?? "";
+      const looksBlocked = /cancel|popup|blocked|closed/i.test(msg);
+      toast.error("Google sign in failed", {
+        description: looksBlocked
+          ? "The Google window was closed or blocked. Try 'Open in new tab' below."
+          : msg,
+      });
       setBusy(false);
       return;
     }
     if (result.redirected) return;
-    navigate({ to: "/library" });
+    navigate({ to: nextPath });
   };
+
 
   const handleEmail = async (e: React.FormEvent) => {
     e.preventDefault();
