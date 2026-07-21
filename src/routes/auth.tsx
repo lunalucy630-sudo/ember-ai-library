@@ -147,6 +147,15 @@ function AuthPage() {
             <GoogleIcon /> Continue with Google
           </Button>
 
+          <button
+            type="button"
+            onClick={openInNewTab}
+            className="mt-2 inline-flex w-full items-center justify-center gap-1.5 rounded-full px-3 py-2 text-xs text-muted-foreground hover:text-foreground"
+          >
+            <ExternalLink className="h-3.5 w-3.5" />
+            {inIframe ? "Google sign-in not working? Open in a new tab" : "Open this page in a new tab"}
+          </button>
+
           <div className="my-5 flex items-center gap-3 text-xs text-muted-foreground">
             <div className="h-px flex-1 bg-border" /> or <div className="h-px flex-1 bg-border" />
           </div>
