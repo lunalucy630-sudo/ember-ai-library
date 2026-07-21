@@ -458,6 +458,40 @@ function SignInDebugPanel(props: {
 }
 
 
+
+/**
+ * Probe whether third-party / cross-site cookies are blocked.
+ * Uses Storage Access API when available, then falls back to a document.cookie probe.
+ * Returns true when blocked, false when allowed, null when unknown.
+ */
+async function detectThirdPartyCookiesBlocked(iframed: boolean): Promise<boolean | null> {
+  try {
+    // Storage Access API is the most accurate signal in iframes (Safari/Firefox/Chrome).
+    // hasStorageAccess() returns false when cross-site cookies are partitioned/blocked.
+    const doc = document as Document & { hasStorageAccess?: () => Promise<boolean> };
+    if (iframed && typeof doc.hasStorageAccess === "function") {
+      try {
+        const has = await doc.hasStorageAccess();
+        if (!has) return true;
+      } catch {
+        /* fall through to cookie probe */
+      }
+    }
+    // Cookie write/read probe as a general fallback.
+    const probe = "lumen_cookie_probe";
+    document.cookie = `${probe}=1; SameSite=None; Secure; Path=/`;
+    const canWrite = document.cookie.includes(`${probe}=1`);
+    // Best-effort cleanup.
+    document.cookie = `${probe}=; Max-Age=0; SameSite=None; Secure; Path=/`;
+    if (!canWrite) return true;
+    // Cookies work first-party; if iframed we can't be 100% sure about cross-site,
+    // but if the write succeeded assume allowed.
+    return false;
+  } catch {
+    return null;
+  }
+}
+
 function GoogleIcon() {
   return (
     <svg viewBox="0 0 24 24" className="mr-2 h-4 w-4" aria-hidden>
