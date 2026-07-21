@@ -96,17 +96,17 @@ function AuthPage() {
     } catch {
       /* ignore */
     }
+    // Proactively check for popup blocker before invoking OAuth.
+    checkPopupBlocker();
     const result = await lovable.auth.signInWithOAuth("google", {
       redirect_uri: window.location.origin,
     });
     if (result.error) {
-      const msg = result.error.message ?? "";
-      const looksBlocked = /cancel|popup|blocked|closed/i.test(msg);
-      toast.error("Google sign in failed", {
-        description: looksBlocked
-          ? "The Google window was closed or blocked. Try 'Open in new tab' below."
-          : msg,
-      });
+      const msg = result.error.message ?? "Sign in was cancelled.";
+      const reason = diagnoseError(msg);
+      setLastError({ reason, raw: msg });
+      setShowDebug(true);
+      toast.error("Google sign in failed", { description: msg });
       setBusy(false);
       return;
     }
