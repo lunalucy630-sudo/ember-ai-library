@@ -191,6 +191,22 @@ function AuthPage() {
             {inIframe ? "Google sign-in not working? Open in a new tab" : "Open this page in a new tab"}
           </button>
 
+          <SignInDebugPanel
+            open={showDebug}
+            onToggle={() => setShowDebug((v) => !v)}
+            inIframe={inIframe}
+            cookiesEnabled={cookiesEnabled}
+            popupBlocked={popupBlocked}
+            lastError={lastError}
+            onOpenInNewTab={openInNewTab}
+            onRecheck={() => {
+              checkPopupBlocker();
+              try { setCookiesEnabled(navigator.cookieEnabled); } catch { /* noop */ }
+            }}
+          />
+
+
+
           <div className="my-5 flex items-center gap-3 text-xs text-muted-foreground">
             <div className="h-px flex-1 bg-border" /> or <div className="h-px flex-1 bg-border" />
           </div>
