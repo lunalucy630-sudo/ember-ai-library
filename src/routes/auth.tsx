@@ -200,23 +200,8 @@ function AuthPage() {
               : "Sign in to open your library."}
           </p>
 
-          <Button
-            onClick={handleGoogle}
-            disabled={busy}
-            variant="outline"
-            className="mt-6 w-full rounded-full border-white/70 bg-white/70 py-6 backdrop-blur"
-          >
-            <GoogleIcon /> Continue with Google
-          </Button>
 
-          <button
-            type="button"
-            onClick={openInNewTab}
-            className="mt-2 inline-flex w-full items-center justify-center gap-1.5 rounded-full px-3 py-2 text-xs text-muted-foreground hover:text-foreground"
-          >
-            <ExternalLink className="h-3.5 w-3.5" />
-            {inIframe ? "Google sign-in not working? Open in a new tab" : "Open this page in a new tab"}
-          </button>
+
 
           {thirdPartyBlocked && (
             <div className="mt-4 flex items-start gap-2 rounded-2xl border border-coral/30 bg-rose/20 p-3 text-xs">
