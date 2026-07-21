@@ -89,11 +89,15 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         property: "og:description",
         content:
-          "A cozy, AI-powered library for every video, document, and idea you want to remember.",
+          "Lumen is a premium AI-powered digital library for videos, lectures, PDFs, and notes. Save it, and let AI watch, read, and remember it for you.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "theme-color", content: "#F8F4F4" },
+      { name: "twitter:title", content: "Lumen — Your AI Video Library" },
+      { name: "twitter:description", content: "Lumen is a premium AI-powered digital library for videos, lectures, PDFs, and notes. Save it, and let AI watch, read, and remember it for you." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/1c4b1219-2b4a-446e-86b6-02f34071a102/id-preview-1fe8e452--b9c09da0-5f09-4b46-98cd-f2c704c73eb1.lovable.app-1784624559674.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/1c4b1219-2b4a-446e-86b6-02f34071a102/id-preview-1fe8e452--b9c09da0-5f09-4b46-98cd-f2c704c73eb1.lovable.app-1784624559674.png" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
