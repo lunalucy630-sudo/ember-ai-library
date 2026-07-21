@@ -89,7 +89,7 @@ function AuthPage() {
           email,
           password,
           options: {
-            emailRedirectTo: window.location.origin,
+            emailRedirectTo: `${window.location.origin}/auth?next=${encodeURIComponent(nextPath)}`,
             data: { full_name: name },
           },
         });
@@ -98,7 +98,7 @@ function AuthPage() {
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        navigate({ to: "/library" });
+        navigate({ to: nextPath });
       }
     } catch (err) {
       toast.error(mode === "signup" ? "Sign up failed" : "Sign in failed", {
