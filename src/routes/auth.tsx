@@ -31,6 +31,7 @@ function AuthPage() {
   const [inIframe, setInIframe] = useState(false);
   const [cookiesEnabled, setCookiesEnabled] = useState<boolean | null>(null);
   const [popupBlocked, setPopupBlocked] = useState<boolean | null>(null);
+  const [thirdPartyBlocked, setThirdPartyBlocked] = useState<boolean | null>(null);
   const [lastError, setLastError] = useState<{ reason: string; raw?: string } | null>(null);
   const [showDebug, setShowDebug] = useState(false);
 
@@ -41,16 +42,20 @@ function AuthPage() {
       : "/library";
 
   useEffect(() => {
+    let iframed = false;
     try {
-      setInIframe(window.self !== window.top);
+      iframed = window.self !== window.top;
     } catch {
-      setInIframe(true);
+      iframed = true;
     }
+    setInIframe(iframed);
     try {
       setCookiesEnabled(navigator.cookieEnabled);
     } catch {
       setCookiesEnabled(null);
     }
+    // Third-party / cross-site cookie access probe.
+    void detectThirdPartyCookiesBlocked(iframed).then(setThirdPartyBlocked);
     supabase.auth.getUser().then(({ data }) => {
       if (data.user) navigate({ to: nextPath });
     });
@@ -90,13 +95,29 @@ function AuthPage() {
 
   const handleGoogle = async () => {
     setBusy(true);
-    // Persist the intended destination so the post-OAuth landing can honor it.
     try {
       sessionStorage.setItem("lumen:next", nextPath);
     } catch {
       /* ignore */
     }
-    // Proactively check for popup blocker before invoking OAuth.
+
+    // If third-party cookies are blocked (or we're iframed with unknown status),
+    // popup OAuth cannot complete — the Google window can't set the session
+    // cookie back into this origin. Break out to a top-level tab instead.
+    if (thirdPartyBlocked === true || (inIframe && thirdPartyBlocked !== false)) {
+      openInNewTab();
+      setLastError({
+        reason: "cookies_disabled",
+        raw: "Third-party cookies are restricted. Opened sign-in in a new tab.",
+      });
+      setShowDebug(true);
+      toast.info("Opening sign-in in a new tab", {
+        description: "Your browser blocks cross-site cookies inside this preview.",
+      });
+      setBusy(false);
+      return;
+    }
+
     checkPopupBlocker();
     const result = await lovable.auth.signInWithOAuth("google", {
       redirect_uri: window.location.origin,
@@ -106,7 +127,13 @@ function AuthPage() {
       const reason = diagnoseError(msg);
       setLastError({ reason, raw: msg });
       setShowDebug(true);
-      toast.error("Google sign in failed", { description: msg });
+      // Auto-recover on cookie/popup errors by opening in a new tab.
+      if (reason === "cookies_disabled" || reason === "popup_blocked") {
+        toast.error("Switching to new-tab sign-in", { description: msg });
+        openInNewTab();
+      } else {
+        toast.error("Google sign in failed", { description: msg });
+      }
       setBusy(false);
       return;
     }
@@ -173,13 +200,31 @@ function AuthPage() {
               : "Sign in to open your library."}
           </p>
 
+
+
+
+          {thirdPartyBlocked && (
+            <div className="mt-4 flex items-start gap-2 rounded-2xl border border-coral/30 bg-rose/20 p-3 text-xs">
+              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-coral" />
+              <div>
+                <div className="font-medium text-foreground">Cross-site cookies are blocked</div>
+                <div className="mt-0.5 text-muted-foreground">
+                  Google sign-in can't complete inside this preview. We'll open it in a new tab, or you can sign in with email below.
+                </div>
+              </div>
+            </div>
+          )}
+
           <Button
             onClick={handleGoogle}
             disabled={busy}
             variant="outline"
-            className="mt-6 w-full rounded-full border-white/70 bg-white/70 py-6 backdrop-blur"
+            className="mt-4 w-full rounded-full border-white/70 bg-white/70 py-6 backdrop-blur"
           >
-            <GoogleIcon /> Continue with Google
+            <GoogleIcon />
+            {thirdPartyBlocked
+              ? "Continue with Google (new tab)"
+              : "Continue with Google"}
           </Button>
 
           <button
@@ -197,11 +242,13 @@ function AuthPage() {
             inIframe={inIframe}
             cookiesEnabled={cookiesEnabled}
             popupBlocked={popupBlocked}
+            thirdPartyBlocked={thirdPartyBlocked}
             lastError={lastError}
             onOpenInNewTab={openInNewTab}
-            onRecheck={() => {
+            onRecheck={async () => {
               checkPopupBlocker();
               try { setCookiesEnabled(navigator.cookieEnabled); } catch { /* noop */ }
+              setThirdPartyBlocked(await detectThirdPartyCookiesBlocked(inIframe));
             }}
           />
 
@@ -326,16 +373,21 @@ function SignInDebugPanel(props: {
   inIframe: boolean;
   cookiesEnabled: boolean | null;
   popupBlocked: boolean | null;
+  thirdPartyBlocked: boolean | null;
   lastError: { reason: string; raw?: string } | null;
   onOpenInNewTab: () => void;
   onRecheck: () => void;
 }) {
-  const { open, onToggle, inIframe, cookiesEnabled, popupBlocked, lastError, onOpenInNewTab, onRecheck } = props;
+  const {
+    open, onToggle, inIframe, cookiesEnabled, popupBlocked,
+    thirdPartyBlocked, lastError, onOpenInNewTab, onRecheck,
+  } = props;
   const info = lastError ? REASONS[lastError.reason] ?? REASONS.unknown : null;
 
   const checks: Check[] = [
     { label: "Not inside an embedded frame", ok: !inIframe, hint: inIframe ? "Preview runs in an iframe — open in a new tab for reliable OAuth." : undefined },
     { label: "Cookies enabled", ok: cookiesEnabled, hint: cookiesEnabled === false ? "Enable cookies in your browser settings." : undefined },
+    { label: "Cross-site cookies allowed", ok: thirdPartyBlocked === null ? null : !thirdPartyBlocked, hint: thirdPartyBlocked ? "Third-party cookies blocked — using new-tab fallback." : undefined },
     { label: "Popups allowed", ok: popupBlocked === null ? null : !popupBlocked, hint: popupBlocked ? "Allow popups for this site." : undefined },
   ];
 
@@ -405,6 +457,40 @@ function SignInDebugPanel(props: {
   );
 }
 
+
+
+/**
+ * Probe whether third-party / cross-site cookies are blocked.
+ * Uses Storage Access API when available, then falls back to a document.cookie probe.
+ * Returns true when blocked, false when allowed, null when unknown.
+ */
+async function detectThirdPartyCookiesBlocked(iframed: boolean): Promise<boolean | null> {
+  try {
+    // Storage Access API is the most accurate signal in iframes (Safari/Firefox/Chrome).
+    // hasStorageAccess() returns false when cross-site cookies are partitioned/blocked.
+    const doc = document as Document & { hasStorageAccess?: () => Promise<boolean> };
+    if (iframed && typeof doc.hasStorageAccess === "function") {
+      try {
+        const has = await doc.hasStorageAccess();
+        if (!has) return true;
+      } catch {
+        /* fall through to cookie probe */
+      }
+    }
+    // Cookie write/read probe as a general fallback.
+    const probe = "lumen_cookie_probe";
+    document.cookie = `${probe}=1; SameSite=None; Secure; Path=/`;
+    const canWrite = document.cookie.includes(`${probe}=1`);
+    // Best-effort cleanup.
+    document.cookie = `${probe}=; Max-Age=0; SameSite=None; Secure; Path=/`;
+    if (!canWrite) return true;
+    // Cookies work first-party; if iframed we can't be 100% sure about cross-site,
+    // but if the write succeeded assume allowed.
+    return false;
+  } catch {
+    return null;
+  }
+}
 
 function GoogleIcon() {
   return (
