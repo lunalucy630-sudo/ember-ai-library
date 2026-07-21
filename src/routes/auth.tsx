@@ -31,6 +31,7 @@ function AuthPage() {
   const [inIframe, setInIframe] = useState(false);
   const [cookiesEnabled, setCookiesEnabled] = useState<boolean | null>(null);
   const [popupBlocked, setPopupBlocked] = useState<boolean | null>(null);
+  const [thirdPartyBlocked, setThirdPartyBlocked] = useState<boolean | null>(null);
   const [lastError, setLastError] = useState<{ reason: string; raw?: string } | null>(null);
   const [showDebug, setShowDebug] = useState(false);
 
@@ -41,16 +42,20 @@ function AuthPage() {
       : "/library";
 
   useEffect(() => {
+    let iframed = false;
     try {
-      setInIframe(window.self !== window.top);
+      iframed = window.self !== window.top;
     } catch {
-      setInIframe(true);
+      iframed = true;
     }
+    setInIframe(iframed);
     try {
       setCookiesEnabled(navigator.cookieEnabled);
     } catch {
       setCookiesEnabled(null);
     }
+    // Third-party / cross-site cookie access probe.
+    void detectThirdPartyCookiesBlocked(iframed).then(setThirdPartyBlocked);
     supabase.auth.getUser().then(({ data }) => {
       if (data.user) navigate({ to: nextPath });
     });
