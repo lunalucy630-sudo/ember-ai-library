@@ -46,10 +46,41 @@ function AuthPage() {
     } catch {
       setInIframe(true);
     }
+    try {
+      setCookiesEnabled(navigator.cookieEnabled);
+    } catch {
+      setCookiesEnabled(null);
+    }
     supabase.auth.getUser().then(({ data }) => {
       if (data.user) navigate({ to: nextPath });
     });
   }, [navigate, nextPath]);
+
+  const checkPopupBlocker = () => {
+    try {
+      const test = window.open("", "_blank", "width=100,height=100");
+      if (!test || test.closed || typeof test.closed === "undefined") {
+        setPopupBlocked(true);
+        return true;
+      }
+      test.close();
+      setPopupBlocked(false);
+      return false;
+    } catch {
+      setPopupBlocked(true);
+      return true;
+    }
+  };
+
+  const diagnoseError = (msg: string): string => {
+    const m = msg.toLowerCase();
+    if (/popup.*block|blocked.*popup/.test(m)) return "popup_blocked";
+    if (/cancel|closed|user.*denied|dismiss/.test(m)) return "user_cancelled";
+    if (/cookie/.test(m)) return "cookies_disabled";
+    if (/network|fetch|timeout/.test(m)) return "network";
+    if (/redirect|origin|domain/.test(m)) return "redirect_uri";
+    return "unknown";
+  };
 
   const openInNewTab = () => {
     const url = new URL(window.location.href);
