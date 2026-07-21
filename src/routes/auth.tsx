@@ -6,11 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Sparkles, ArrowLeft } from "lucide-react";
+import { Sparkles, ArrowLeft, ExternalLink } from "lucide-react";
 import { z } from "zod";
 
 const searchSchema = z.object({
   mode: z.enum(["signin", "signup"]).optional(),
+  next: z.string().optional(),
 });
 
 export const Route = createFileRoute("/auth")({
@@ -27,26 +28,57 @@ function AuthPage() {
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
+  const [inIframe, setInIframe] = useState(false);
+
+  // Sanitize `next` to same-origin relative path only.
+  const nextPath =
+    search.next && search.next.startsWith("/") && !search.next.startsWith("//")
+      ? search.next
+      : "/library";
 
   useEffect(() => {
+    try {
+      setInIframe(window.self !== window.top);
+    } catch {
+      setInIframe(true);
+    }
     supabase.auth.getUser().then(({ data }) => {
-      if (data.user) navigate({ to: "/library" });
+      if (data.user) navigate({ to: nextPath });
     });
-  }, [navigate]);
+  }, [navigate, nextPath]);
+
+  const openInNewTab = () => {
+    const url = new URL(window.location.href);
+    url.searchParams.set("next", nextPath);
+    window.open(url.toString(), "_blank", "noopener,noreferrer");
+  };
 
   const handleGoogle = async () => {
     setBusy(true);
+    // Persist the intended destination so the post-OAuth landing can honor it.
+    try {
+      sessionStorage.setItem("lumen:next", nextPath);
+    } catch {
+      /* ignore */
+    }
     const result = await lovable.auth.signInWithOAuth("google", {
       redirect_uri: window.location.origin,
     });
     if (result.error) {
-      toast.error("Google sign in failed", { description: result.error.message });
+      const msg = result.error.message ?? "";
+      const looksBlocked = /cancel|popup|blocked|closed/i.test(msg);
+      toast.error("Google sign in failed", {
+        description: looksBlocked
+          ? "The Google window was closed or blocked. Try 'Open in new tab' below."
+          : msg,
+      });
       setBusy(false);
       return;
     }
     if (result.redirected) return;
-    navigate({ to: "/library" });
+    navigate({ to: nextPath });
   };
+
 
   const handleEmail = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,7 +89,7 @@ function AuthPage() {
           email,
           password,
           options: {
-            emailRedirectTo: window.location.origin,
+            emailRedirectTo: `${window.location.origin}/auth?next=${encodeURIComponent(nextPath)}`,
             data: { full_name: name },
           },
         });
@@ -66,7 +98,7 @@ function AuthPage() {
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        navigate({ to: "/library" });
+        navigate({ to: nextPath });
       }
     } catch (err) {
       toast.error(mode === "signup" ? "Sign up failed" : "Sign in failed", {
@@ -114,6 +146,15 @@ function AuthPage() {
           >
             <GoogleIcon /> Continue with Google
           </Button>
+
+          <button
+            type="button"
+            onClick={openInNewTab}
+            className="mt-2 inline-flex w-full items-center justify-center gap-1.5 rounded-full px-3 py-2 text-xs text-muted-foreground hover:text-foreground"
+          >
+            <ExternalLink className="h-3.5 w-3.5" />
+            {inIframe ? "Google sign-in not working? Open in a new tab" : "Open this page in a new tab"}
+          </button>
 
           <div className="my-5 flex items-center gap-3 text-xs text-muted-foreground">
             <div className="h-px flex-1 bg-border" /> or <div className="h-px flex-1 bg-border" />
