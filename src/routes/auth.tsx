@@ -218,17 +218,52 @@ function AuthPage() {
             {inIframe ? "Google sign-in not working? Open in a new tab" : "Open this page in a new tab"}
           </button>
 
+          {thirdPartyBlocked && (
+            <div className="mt-4 flex items-start gap-2 rounded-2xl border border-coral/30 bg-rose/20 p-3 text-xs">
+              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-coral" />
+              <div>
+                <div className="font-medium text-foreground">Cross-site cookies are blocked</div>
+                <div className="mt-0.5 text-muted-foreground">
+                  Google sign-in can't complete inside this preview. We'll open it in a new tab, or you can sign in with email below.
+                </div>
+              </div>
+            </div>
+          )}
+
+          <Button
+            onClick={handleGoogle}
+            disabled={busy}
+            variant="outline"
+            className="mt-4 w-full rounded-full border-white/70 bg-white/70 py-6 backdrop-blur"
+          >
+            <GoogleIcon />
+            {thirdPartyBlocked
+              ? "Continue with Google (new tab)"
+              : "Continue with Google"}
+          </Button>
+
+          <button
+            type="button"
+            onClick={openInNewTab}
+            className="mt-2 inline-flex w-full items-center justify-center gap-1.5 rounded-full px-3 py-2 text-xs text-muted-foreground hover:text-foreground"
+          >
+            <ExternalLink className="h-3.5 w-3.5" />
+            {inIframe ? "Google sign-in not working? Open in a new tab" : "Open this page in a new tab"}
+          </button>
+
           <SignInDebugPanel
             open={showDebug}
             onToggle={() => setShowDebug((v) => !v)}
             inIframe={inIframe}
             cookiesEnabled={cookiesEnabled}
             popupBlocked={popupBlocked}
+            thirdPartyBlocked={thirdPartyBlocked}
             lastError={lastError}
             onOpenInNewTab={openInNewTab}
-            onRecheck={() => {
+            onRecheck={async () => {
               checkPopupBlocker();
               try { setCookiesEnabled(navigator.cookieEnabled); } catch { /* noop */ }
+              setThirdPartyBlocked(await detectThirdPartyCookiesBlocked(inIframe));
             }}
           />
 
