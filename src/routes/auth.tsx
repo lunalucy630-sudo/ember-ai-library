@@ -95,13 +95,29 @@ function AuthPage() {
 
   const handleGoogle = async () => {
     setBusy(true);
-    // Persist the intended destination so the post-OAuth landing can honor it.
     try {
       sessionStorage.setItem("lumen:next", nextPath);
     } catch {
       /* ignore */
     }
-    // Proactively check for popup blocker before invoking OAuth.
+
+    // If third-party cookies are blocked (or we're iframed with unknown status),
+    // popup OAuth cannot complete — the Google window can't set the session
+    // cookie back into this origin. Break out to a top-level tab instead.
+    if (thirdPartyBlocked === true || (inIframe && thirdPartyBlocked !== false)) {
+      openInNewTab();
+      setLastError({
+        reason: "cookies_disabled",
+        raw: "Third-party cookies are restricted. Opened sign-in in a new tab.",
+      });
+      setShowDebug(true);
+      toast.info("Opening sign-in in a new tab", {
+        description: "Your browser blocks cross-site cookies inside this preview.",
+      });
+      setBusy(false);
+      return;
+    }
+
     checkPopupBlocker();
     const result = await lovable.auth.signInWithOAuth("google", {
       redirect_uri: window.location.origin,
@@ -111,7 +127,13 @@ function AuthPage() {
       const reason = diagnoseError(msg);
       setLastError({ reason, raw: msg });
       setShowDebug(true);
-      toast.error("Google sign in failed", { description: msg });
+      // Auto-recover on cookie/popup errors by opening in a new tab.
+      if (reason === "cookies_disabled" || reason === "popup_blocked") {
+        toast.error("Switching to new-tab sign-in", { description: msg });
+        openInNewTab();
+      } else {
+        toast.error("Google sign in failed", { description: msg });
+      }
       setBusy(false);
       return;
     }
