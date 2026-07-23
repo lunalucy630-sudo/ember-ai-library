@@ -20,6 +20,7 @@ export interface LibraryItem {
   file_size: number | null;
   duration_seconds: number | null;
   thumbnail_path: string | null;
+  manual_thumbnail_url: string | null;
   raw_content: string | null;
   transcript: string | null;
   summary_short: string | null;
@@ -41,6 +42,17 @@ export interface Collection {
   description: string | null;
   color: string | null;
   icon: string | null;
+  created_at: string;
+}
+
+export interface RelatedResource {
+  id: string;
+  item_id: string;
+  kind: "url" | "item";
+  target_item_id: string | null;
+  url: string | null;
+  title: string;
+  description: string | null;
   created_at: string;
 }
 
@@ -90,7 +102,58 @@ export const getItem = createServerFn({ method: "GET" })
         })
         .filter((v): v is { id: string; name: string } => v !== null);
 
-    return { item: item as LibraryItem, playbackUrl, collections };
+    const { data: relatedRows } = await context.supabase
+      .from("related_resources")
+      .select("*")
+      .eq("item_id", data.id)
+      .order("created_at", { ascending: true });
+
+    const related = (relatedRows ?? []) as RelatedResource[];
+
+    // Resolve target item titles for kind='item'
+    const targetIds = related
+      .filter((r) => r.kind === "item" && r.target_item_id)
+      .map((r) => r.target_item_id!) as string[];
+    let targets: Record<string, { id: string; title: string; kind: string }> = {};
+    if (targetIds.length > 0) {
+      const { data: tgt } = await context.supabase
+        .from("items")
+        .select("id, title, kind")
+        .in("id", targetIds);
+      targets = Object.fromEntries((tgt ?? []).map((t) => [t.id, t]));
+    }
+
+    return {
+      item: item as LibraryItem,
+      playbackUrl,
+      collections,
+      related,
+      relatedTargets: targets,
+    };
+  });
+
+/* ---------------------------- Update item -------------------------- */
+export const updateItem = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator(
+    (input: { id: string; title?: string; description?: string; manual_thumbnail_url?: string | null }) =>
+      z
+        .object({
+          id: z.string().uuid(),
+          title: z.string().min(1).max(200).optional(),
+          description: z.string().max(4000).optional(),
+          manual_thumbnail_url: z.string().url().nullable().optional(),
+        })
+        .parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    const patch: Record<string, unknown> = {};
+    if (data.title !== undefined) patch.title = data.title;
+    if (data.description !== undefined) patch.description = data.description;
+    if (data.manual_thumbnail_url !== undefined) patch.manual_thumbnail_url = data.manual_thumbnail_url;
+    const { error } = await context.supabase.from("items").update(patch).eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
   });
 
 /* ---------------------------- Delete item -------------------------- */
@@ -200,11 +263,64 @@ export const toggleItemInCollection = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+/* -------------------------- Related resources ---------------------- */
+export const addRelatedResource = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator(
+    (input: {
+      itemId: string;
+      kind: "url" | "item";
+      url?: string;
+      targetItemId?: string;
+      title: string;
+      description?: string;
+    }) =>
+      z
+        .object({
+          itemId: z.string().uuid(),
+          kind: z.enum(["url", "item"]),
+          url: z.string().url().optional(),
+          targetItemId: z.string().uuid().optional(),
+          title: z.string().min(1).max(200),
+          description: z.string().max(500).optional(),
+        })
+        .parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    if (data.kind === "url" && !data.url) throw new Error("URL is required");
+    if (data.kind === "item" && !data.targetItemId) throw new Error("Target item is required");
+    const { data: row, error } = await context.supabase
+      .from("related_resources")
+      .insert({
+        user_id: context.userId,
+        item_id: data.itemId,
+        kind: data.kind,
+        url: data.url ?? null,
+        target_item_id: data.targetItemId ?? null,
+        title: data.title,
+        description: data.description ?? null,
+      })
+      .select()
+      .single();
+    if (error) throw new Error(error.message);
+    return row as RelatedResource;
+  });
+
+export const removeRelatedResource = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { id: string }) => z.object({ id: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }) => {
+    const { error } = await context.supabase.from("related_resources").delete().eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
 /* ---------------------- Create items (link/note) ------------------- */
 function detectLinkSource(url: string): { source: ItemSource; kind: ItemKind } {
   const u = url.toLowerCase();
   if (u.includes("youtube.com") || u.includes("youtu.be")) return { source: "youtube", kind: "video" };
   if (u.includes("tiktok.com")) return { source: "tiktok", kind: "video" };
+  // Instagram: /reel/, /reels/, /p/, /tv/ all supported as video
   if (u.includes("instagram.com")) return { source: "instagram", kind: "video" };
   return { source: "link", kind: "link" };
 }
@@ -212,7 +328,15 @@ function detectLinkSource(url: string): { source: ItemSource; kind: ItemKind } {
 export const createItemFromLink = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { url: string; title?: string }) =>
-    z.object({ url: z.string().url(), title: z.string().max(200).optional() }).parse(input),
+    z
+      .object({
+        url: z
+          .string()
+          .trim()
+          .url("Please enter a valid URL (must start with http:// or https://)"),
+        title: z.string().max(200).optional(),
+      })
+      .parse(input),
   )
   .handler(async ({ data, context }) => {
     const { source, kind } = detectLinkSource(data.url);
@@ -303,9 +427,10 @@ export const registerUploadedItem = createServerFn({ method: "POST" })
 
 /* ------------------------------ AI --------------------------------- */
 const LOVABLE_AI_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
-const MAX_INLINE_BYTES = 15 * 1024 * 1024; // 15MB safety cap
+const MAX_INLINE_BYTES = 15 * 1024 * 1024;
 
 interface AnalysisResult {
+  title?: string;
   summary_short: string;
   summary_long: string;
   key_points: string[];
@@ -316,14 +441,15 @@ interface AnalysisResult {
 }
 
 function buildSystemPrompt(): string {
-  return `You are Lumen, an AI librarian analyzing a user's saved knowledge item.
+  return `You are Ember, an AI librarian analyzing a user's saved knowledge item.
 You are meticulous, warm, and precise. Read/watch/listen to the content carefully and return a JSON object.
 
 Return ONLY valid JSON matching this shape:
 {
-  "summary_short": string (1-2 sentences),
-  "summary_long": string (3-6 short paragraphs, plain text with \\n\\n between them),
-  "key_points": string[] (3-8 actionable takeaways),
+  "title": string (optional — a better, concise title if the current one is generic or missing),
+  "summary_short": string (a real 3-5 sentence paragraph — cover what the content is about, the main argument or purpose, and the standout insight. Do NOT write a one-line teaser.),
+  "summary_long": string (3-6 paragraphs, plain text with \\n\\n between them, covering context, main ideas, evidence or examples, and takeaways),
+  "key_points": string[] (3-8 actionable takeaways, each a complete sentence),
   "tags": string[] (5-12 lowercase, hyphen-free searchable keywords),
   "suggested_collections": string[] (1-4 short collection names in Title Case, e.g. "Recipes", "Leadership", "Psychology"),
   "transcript": string | null (only for videos/audio: the spoken transcript if you can produce one; otherwise null),
@@ -358,6 +484,15 @@ function extractJson(text: string): AnalysisResult | null {
   }
 }
 
+function fallbackSummary(item: { title: string; raw_content: string | null; description: string | null; source: string }): string {
+  const source = item.raw_content ?? item.description ?? "";
+  if (source) {
+    const trimmed = source.replace(/\s+/g, " ").trim().slice(0, 400);
+    return trimmed + (source.length > 400 ? "…" : "");
+  }
+  return `Summary unavailable. This ${item.source} item was saved as "${item.title}" but hasn't been analyzed yet — try Re-analyze.`;
+}
+
 export const analyzeItem = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { id: string }) => z.object({ id: z.string().uuid() }).parse(input))
@@ -373,23 +508,28 @@ export const analyzeItem = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     if (!item) throw new Error("Item not found");
 
-    await context.supabase.from("items").update({ status: "processing", error_message: null }).eq("id", data.id);
+    await context.supabase
+      .from("items")
+      .update({ status: "processing", error_message: null })
+      .eq("id", data.id);
 
     try {
-      // Build user content parts
       const parts: Array<Record<string, unknown>> = [];
       let instruction = `Analyze this item titled "${item.title}".`;
 
-      if (item.raw_content) {
-        instruction += `\n\nContent:\n${item.raw_content.slice(0, 40000)}`;
-      }
+      if (item.description) instruction += `\n\nUser-provided description:\n${item.description}`;
+      if (item.raw_content) instruction += `\n\nContent:\n${item.raw_content.slice(0, 40000)}`;
+
       if (item.source_url && (item.source === "youtube" || item.source === "tiktok" || item.source === "instagram")) {
-        instruction += `\n\nSource URL: ${item.source_url}\nThis is a ${item.source} video. Analyze what you know or can infer from the URL context; if the video content is unavailable, use the URL and title to produce your best-effort analysis and note the limitation in the long summary.`;
+        instruction += `\n\nSource URL: ${item.source_url}\nThis is a ${item.source} video. ${
+          item.source === "instagram"
+            ? "Instagram Reels can't be fetched directly (login-walled). Use the URL, title, and any description provided to produce your best-effort analysis, and note clearly in summary_long that the content wasn't fetched."
+            : "Analyze what you can infer from the URL and title."
+        }`;
       } else if (item.source_url) {
         instruction += `\n\nSource URL: ${item.source_url}`;
       }
 
-      // Try to attach uploaded media
       if (item.storage_path && item.mime_type) {
         const { data: signed } = await context.supabase.storage
           .from("library")
@@ -402,7 +542,11 @@ export const analyzeItem = createServerFn({ method: "POST" })
             } else if (item.mime_type.startsWith("audio/")) {
               const fmt = item.mime_type.split("/")[1]?.split(";")[0] || "webm";
               parts.push({ type: "input_audio", input_audio: { data: blob.data, format: fmt } });
-            } else if (item.mime_type === "application/pdf" || item.mime_type.includes("document") || item.mime_type.includes("presentation")) {
+            } else if (
+              item.mime_type === "application/pdf" ||
+              item.mime_type.includes("document") ||
+              item.mime_type.includes("presentation")
+            ) {
               parts.push({
                 type: "file",
                 file: {
@@ -411,7 +555,6 @@ export const analyzeItem = createServerFn({ method: "POST" })
                 },
               });
             } else if (item.mime_type.startsWith("video/")) {
-              // Gemini can accept video via image_url data URL as well; smaller = better
               parts.push({ type: "image_url", image_url: { url: `data:${blob.mime};base64,${blob.data}` } });
             }
           } else {
@@ -433,10 +576,7 @@ export const analyzeItem = createServerFn({ method: "POST" })
 
       const res = await fetch(LOVABLE_AI_URL, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${key}`,
-        },
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
         body: JSON.stringify(body),
       });
 
@@ -444,19 +584,23 @@ export const analyzeItem = createServerFn({ method: "POST" })
         const errText = await res.text();
         throw new Error(`AI gateway ${res.status}: ${errText.slice(0, 400)}`);
       }
-      const json = (await res.json()) as {
-        choices?: Array<{ message?: { content?: string } }>;
-      };
+      const json = (await res.json()) as { choices?: Array<{ message?: { content?: string } }> };
       const content = json.choices?.[0]?.message?.content ?? "";
       const analysis = extractJson(content);
       if (!analysis) throw new Error("AI returned unparseable response");
 
-      const update = {
-        status: "ready" as const,
-        summary_short: analysis.summary_short?.slice(0, 800) ?? null,
-        summary_long: analysis.summary_long ?? null,
+      const summaryShort =
+        (analysis.summary_short && analysis.summary_short.trim()) || fallbackSummary(item);
+      const summaryLong = analysis.summary_long?.trim() || summaryShort;
+
+      const patch: Record<string, unknown> = {
+        status: "ready",
+        summary_short: summaryShort.slice(0, 2000),
+        summary_long: summaryLong,
         key_points: Array.isArray(analysis.key_points) ? analysis.key_points.slice(0, 12) : [],
-        tags: Array.isArray(analysis.tags) ? analysis.tags.map((t) => String(t).toLowerCase()).slice(0, 20) : [],
+        tags: Array.isArray(analysis.tags)
+          ? analysis.tags.map((t) => String(t).toLowerCase()).slice(0, 20)
+          : [],
         suggested_collections: Array.isArray(analysis.suggested_collections)
           ? analysis.suggested_collections.slice(0, 6)
           : [],
@@ -464,16 +608,25 @@ export const analyzeItem = createServerFn({ method: "POST" })
         timestamps: Array.isArray(analysis.timestamps) ? analysis.timestamps.slice(0, 30) : [],
         error_message: null,
       };
+      // If the model proposed a stronger title and the current one looks auto-derived, adopt it.
+      if (analysis.title && analysis.title.trim().length > 3 && /^https?:|—|\.[a-z]{2,4}$/i.test(item.title)) {
+        patch.title = analysis.title.trim().slice(0, 200);
+      }
 
-      const { error: uErr } = await context.supabase.from("items").update(update).eq("id", data.id);
+      const { error: uErr } = await context.supabase.from("items").update(patch).eq("id", data.id);
       if (uErr) throw new Error(uErr.message);
 
       return { ok: true };
     } catch (err) {
       const message = err instanceof Error ? err.message : "Analysis failed";
+      // Still populate a fallback summary so the UI is never empty.
       await context.supabase
         .from("items")
-        .update({ status: "failed", error_message: message.slice(0, 500) })
+        .update({
+          status: "failed",
+          error_message: message.slice(0, 500),
+          summary_short: item.summary_short ?? fallbackSummary(item),
+        })
         .eq("id", data.id);
       throw err;
     }
@@ -486,7 +639,6 @@ export const searchLibrary = createServerFn({ method: "POST" })
     z.object({ query: z.string().min(1).max(400) }).parse(input),
   )
   .handler(async ({ data, context }) => {
-    // Text search across title, description, transcript, summary, tags
     const q = data.query.trim();
     const like = `%${q}%`;
     const { data: rows, error } = await context.supabase
@@ -499,7 +651,6 @@ export const searchLibrary = createServerFn({ method: "POST" })
       .limit(40);
     if (error) throw new Error(error.message);
 
-    // Also match tags
     const { data: tagged } = await context.supabase
       .from("items")
       .select("*")
@@ -516,6 +667,14 @@ export const searchLibrary = createServerFn({ method: "POST" })
 function guessTitleFromUrl(url: string): string {
   try {
     const u = new URL(url);
+    if (u.hostname.includes("instagram.com")) {
+      if (u.pathname.includes("/reel/") || u.pathname.includes("/reels/")) return "Instagram Reel";
+      if (u.pathname.includes("/p/")) return "Instagram post";
+      if (u.pathname.includes("/tv/")) return "Instagram IGTV";
+      return "Instagram";
+    }
+    if (u.hostname.includes("tiktok.com")) return "TikTok video";
+    if (u.hostname.includes("youtube.com") || u.hostname.includes("youtu.be")) return "YouTube video";
     return `${u.hostname.replace(/^www\./, "")} — ${u.pathname.slice(1, 60) || "link"}`;
   } catch {
     return url.slice(0, 60);
