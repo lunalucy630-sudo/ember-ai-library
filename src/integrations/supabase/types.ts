@@ -152,6 +152,7 @@ export type Database = {
           id: string
           key_points: Json | null
           kind: Database["public"]["Enums"]["item_kind"]
+          manual_thumbnail_url: string | null
           mime_type: string | null
           raw_content: string | null
           source: Database["public"]["Enums"]["item_source"]
@@ -178,6 +179,7 @@ export type Database = {
           id?: string
           key_points?: Json | null
           kind: Database["public"]["Enums"]["item_kind"]
+          manual_thumbnail_url?: string | null
           mime_type?: string | null
           raw_content?: string | null
           source?: Database["public"]["Enums"]["item_source"]
@@ -204,6 +206,7 @@ export type Database = {
           id?: string
           key_points?: Json | null
           kind?: Database["public"]["Enums"]["item_kind"]
+          manual_thumbnail_url?: string | null
           mime_type?: string | null
           raw_content?: string | null
           source?: Database["public"]["Enums"]["item_source"]
@@ -246,6 +249,57 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      related_resources: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          item_id: string
+          kind: string
+          target_item_id: string | null
+          title: string
+          url: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          item_id: string
+          kind: string
+          target_item_id?: string | null
+          title: string
+          url?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          item_id?: string
+          kind?: string
+          target_item_id?: string | null
+          title?: string
+          url?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "related_resources_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "related_resources_target_item_id_fkey"
+            columns: ["target_item_id"]
+            isOneToOne: false
+            referencedRelation: "items"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
