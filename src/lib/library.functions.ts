@@ -151,7 +151,7 @@ export const updateItem = createServerFn({ method: "POST" })
     if (data.title !== undefined) patch.title = data.title;
     if (data.description !== undefined) patch.description = data.description;
     if (data.manual_thumbnail_url !== undefined) patch.manual_thumbnail_url = data.manual_thumbnail_url;
-    const { error } = await context.supabase.from("items").update(patch).eq("id", data.id);
+    const { error } = await context.supabase.from("items").update(patch as never).eq("id", data.id);
     if (error) throw new Error(error.message);
     return { ok: true };
   });
@@ -613,7 +613,7 @@ export const analyzeItem = createServerFn({ method: "POST" })
         patch.title = analysis.title.trim().slice(0, 200);
       }
 
-      const { error: uErr } = await context.supabase.from("items").update(patch).eq("id", data.id);
+      const { error: uErr } = await context.supabase.from("items").update(patch as never).eq("id", data.id);
       if (uErr) throw new Error(uErr.message);
 
       return { ok: true };
