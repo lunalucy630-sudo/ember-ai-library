@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -156,7 +157,7 @@ function AuthPage() {
           },
         });
         if (error) throw error;
-        toast.success("Welcome to Ember", { description: "Check your inbox to confirm your email." });
+        toast.success(t("auth.welcomeToast"), { description: t("auth.confirmInbox") });
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
@@ -192,12 +193,12 @@ function AuthPage() {
           </div>
 
           <h1 className="font-display text-2xl font-semibold tracking-tight">
-            {mode === "signup" ? "Create your library" : "Welcome back"}
+            {mode === "signup" ? t("auth.createLibrary") : t("auth.welcomeBack")}
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
             {mode === "signup"
               ? "A cozy place for everything you want to remember."
-              : "Sign in to open your library."}
+              : t("auth.welcomeSubSignIn")}
           </p>
 
 
@@ -223,8 +224,8 @@ function AuthPage() {
           >
             <GoogleIcon />
             {thirdPartyBlocked
-              ? "Continue with Google (new tab)"
-              : "Continue with Google"}
+              ? t("auth.continueGoogleNewTab")
+              : t("auth.continueGoogle")}
           </Button>
 
           <button
@@ -233,7 +234,7 @@ function AuthPage() {
             className="mt-2 inline-flex w-full items-center justify-center gap-1.5 rounded-full px-3 py-2 text-xs text-muted-foreground hover:text-foreground"
           >
             <ExternalLink className="h-3.5 w-3.5" />
-            {inIframe ? "Google sign-in not working? Open in a new tab" : "Open this page in a new tab"}
+            {inIframe ? t("auth.notWorkingOpenNewTab") : t("auth.openNewTab")}
           </button>
 
           <SignInDebugPanel
@@ -261,18 +262,18 @@ function AuthPage() {
           <form onSubmit={handleEmail} className="space-y-3">
             {mode === "signup" && (
               <div className="space-y-1.5">
-                <Label htmlFor="name">Name</Label>
+                <Label htmlFor="name">{t("auth.name")}</Label>
                 <Input
                   id="name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="Your name"
+                  placeholder={t("auth.namePh")}
                   className="rounded-xl bg-white/70"
                 />
               </div>
             )}
             <div className="space-y-1.5">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t("auth.email")}</Label>
               <Input
                 id="email"
                 type="email"
@@ -284,7 +285,7 @@ function AuthPage() {
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">{t("auth.password")}</Label>
               <Input
                 id="password"
                 type="password"
@@ -301,17 +302,17 @@ function AuthPage() {
               disabled={busy}
               className="w-full rounded-full bg-gradient-to-r from-coral to-rose py-6 text-primary-foreground shadow-[var(--shadow-soft)] hover:opacity-95"
             >
-              {busy ? "Please wait…" : mode === "signup" ? "Create account" : "Sign in"}
+              {busy ? t("auth.please") : mode === "signup" ? t("auth.createAccount") : t("auth.signIn")}
             </Button>
           </form>
 
           <p className="mt-5 text-center text-sm text-muted-foreground">
-            {mode === "signup" ? "Already have an account? " : "New to Ember? "}
+            {mode === "signup" ? t("auth.haveAccount") + " " : t("auth.newHere") + " "}
             <button
               onClick={() => setMode(mode === "signup" ? "signin" : "signup")}
               className="font-medium text-foreground underline-offset-2 hover:underline"
             >
-              {mode === "signup" ? "Sign in" : "Create one"}
+              {mode === "signup" ? t("auth.signIn") : t("auth.createOne")}
             </button>
           </p>
         </div>
