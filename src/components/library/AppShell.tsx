@@ -100,7 +100,7 @@ function SidebarContent() {
               className={`group flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm transition-colors ${
                 active
                   ? "bg-gradient-to-r from-coral/25 to-rose/20 text-foreground font-medium"
-                  : "text-foreground/70 hover:bg-white/60"
+                  : "text-foreground/70 hover:bg-card/60"
               }`}
             >
               <n.icon className={`h-4 w-4 ${active ? "text-coral" : ""}`} />
@@ -117,7 +117,7 @@ function SidebarContent() {
           </div>
           <button
             onClick={() => setOpenCreateCollection(true)}
-            className="rounded-full p-1 text-muted-foreground hover:bg-white/70 hover:text-foreground"
+            className="rounded-full p-1 text-muted-foreground hover:bg-card/70 hover:text-foreground"
             aria-label={t("nav.newCollection")}
           >
             <Plus className="h-3.5 w-3.5" />
@@ -134,7 +134,7 @@ function SidebarContent() {
               key={c.id}
               to="/collection/$id"
               params={{ id: c.id }}
-              className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm text-foreground/75 hover:bg-white/60"
+              className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm text-foreground/75 hover:bg-card/60"
             >
               <BookOpen className="h-3.5 w-3.5 opacity-60" />
               <span className="truncate">{c.name}</span>
@@ -147,7 +147,7 @@ function SidebarContent() {
         <LangThemeSwitcher />
         <button
           onClick={signOut}
-          className="flex w-full items-center gap-2 rounded-2xl px-3 py-2.5 text-sm text-foreground/70 hover:bg-white/60"
+          className="flex w-full items-center gap-2 rounded-2xl px-3 py-2.5 text-sm text-foreground/70 hover:bg-card/60"
         >
           <LogOut className="h-4 w-4" /> {t("nav.signOut")}
         </button>

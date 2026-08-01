@@ -66,7 +66,7 @@ function Landing() {
       </header>
 
       <main className="relative z-10 mx-auto max-w-6xl px-6 pt-20 pb-32 text-center">
-        <div className="mx-auto mb-6 inline-flex items-center gap-2 rounded-full border border-white/60 bg-white/60 px-4 py-1.5 text-xs font-medium text-foreground/80 backdrop-blur">
+        <div className="mx-auto mb-6 inline-flex items-center gap-2 rounded-full border border-white/60 bg-card/60 px-4 py-1.5 text-xs font-medium text-foreground/80 backdrop-blur">
           <Sparkles className="h-3.5 w-3.5 text-coral" /> {t("landing.badge")}
         </div>
         <h1 className="font-display text-5xl leading-[1.05] tracking-tight sm:text-7xl">
@@ -83,7 +83,7 @@ function Landing() {
             </Button>
           </Link>
           <Link to="/auth">
-            <Button size="lg" variant="outline" className="rounded-full border-white/70 bg-white/60 px-8 py-6 text-base backdrop-blur">
+            <Button size="lg" variant="outline" className="rounded-full border-white/70 bg-card/60 px-8 py-6 text-base backdrop-blur">
               {t("landing.signIn")}
             </Button>
           </Link>

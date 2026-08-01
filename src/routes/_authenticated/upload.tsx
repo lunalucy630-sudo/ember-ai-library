@@ -33,7 +33,7 @@ function UploadPage() {
       </header>
 
       <Tabs defaultValue="upload" className="w-full">
-        <TabsList className="mb-6 grid h-auto w-full grid-cols-3 rounded-2xl bg-white/70 p-1.5 backdrop-blur">
+        <TabsList className="mb-6 grid h-auto w-full grid-cols-3 rounded-2xl bg-card/70 p-1.5 backdrop-blur">
           <TabsTrigger value="upload" className="rounded-xl py-2.5 data-[state=active]:bg-gradient-to-r data-[state=active]:from-coral data-[state=active]:to-rose data-[state=active]:text-primary-foreground">
             <UploadIcon className="mr-2 h-4 w-4" /> {t("upload.tabUpload")}
           </TabsTrigger>
@@ -121,7 +121,7 @@ function UploadForm() {
         onDrop={onDrop}
         onDragOver={(e) => e.preventDefault()}
         onClick={() => inputRef.current?.click()}
-        className="grid cursor-pointer place-items-center rounded-2xl border-2 border-dashed border-rose/50 bg-white/40 px-6 py-14 text-center transition-colors hover:bg-white/60"
+        className="grid cursor-pointer place-items-center rounded-2xl border-2 border-dashed border-rose/50 bg-card/40 px-6 py-14 text-center transition-colors hover:bg-card/60"
       >
         <div className="grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br from-coral to-rose text-primary-foreground shadow-[var(--shadow-glow)]">
           <UploadIcon className="h-6 w-6" />
@@ -152,11 +152,11 @@ function UploadForm() {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Give it a lovely name"
-            className="rounded-xl bg-white/80"
+            className="rounded-xl bg-card/80"
           />
         </div>
         {busy && (
-          <div className="h-2 overflow-hidden rounded-full bg-white/70">
+          <div className="h-2 overflow-hidden rounded-full bg-card/70">
             <div
               className="h-full rounded-full bg-gradient-to-r from-coral to-rose transition-all"
               style={{ width: `${progress}%` }}
@@ -211,7 +211,7 @@ function LinkForm() {
             value={url}
             onChange={(e) => setUrl(e.target.value)}
             placeholder={t("upload.urlPh")}
-            className="rounded-xl bg-white/80"
+            className="rounded-xl bg-card/80"
           />
         </div>
         <div className="space-y-1.5">
@@ -221,7 +221,7 @@ function LinkForm() {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder={t("upload.titleAutofill")}
-            className="rounded-xl bg-white/80"
+            className="rounded-xl bg-card/80"
           />
         </div>
         <Button
@@ -269,7 +269,7 @@ function NoteForm() {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder={t("upload.noteTitle")}
-            className="rounded-xl bg-white/80"
+            className="rounded-xl bg-card/80"
           />
         </div>
         <div className="space-y-1.5">
@@ -279,7 +279,7 @@ function NoteForm() {
             value={content}
             onChange={(e) => setContent(e.target.value)}
             placeholder={t("upload.notePh")}
-            className="min-h-[180px] rounded-2xl bg-white/80"
+            className="min-h-[180px] rounded-2xl bg-card/80"
           />
         </div>
         <Button

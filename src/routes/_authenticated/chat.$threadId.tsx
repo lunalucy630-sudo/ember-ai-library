@@ -71,7 +71,7 @@ function ThreadPage() {
             <div key={m.id} className={`flex gap-3 ${m.role === "user" ? "flex-row-reverse" : ""}`}>
               <div className={`grid h-8 w-8 shrink-0 place-items-center rounded-full ${
                 m.role === "user"
-                  ? "bg-white/70 text-foreground"
+                  ? "bg-card/70 text-foreground"
                   : "bg-gradient-to-br from-coral to-rose text-primary-foreground"
               }`}>
                 {m.role === "user" ? <User className="h-4 w-4" /> : <Sparkles className="h-4 w-4" />}
@@ -79,7 +79,7 @@ function ThreadPage() {
               <div className={`max-w-[80%] rounded-3xl px-4 py-3 text-sm ${
                 m.role === "user"
                   ? "bg-gradient-to-r from-coral/25 to-rose/20 text-foreground"
-                  : "bg-white/80 text-foreground/90"
+                  : "bg-card/80 text-foreground/90"
               }`}>
                 <div className="prose prose-sm max-w-none">
                   <ReactMarkdown>{stripCitations(m.content)}</ReactMarkdown>
@@ -91,7 +91,7 @@ function ThreadPage() {
                         key={id}
                         to="/item/$id"
                         params={{ id }}
-                        className="rounded-full bg-white/70 px-2.5 py-0.5 text-[11px] text-foreground/80 hover:bg-white"
+                        className="rounded-full bg-card/70 px-2.5 py-0.5 text-[11px] text-foreground/80 hover:bg-white"
                       >
                         cited item
                       </Link>
@@ -107,7 +107,7 @@ function ThreadPage() {
             <div className="grid h-8 w-8 place-items-center rounded-full bg-gradient-to-br from-coral to-rose text-primary-foreground">
               <Sparkles className="h-4 w-4" />
             </div>
-            <div className="rounded-3xl bg-white/80 px-4 py-3 text-sm text-foreground/70">
+            <div className="rounded-3xl bg-card/80 px-4 py-3 text-sm text-foreground/70">
               <span className="inline-flex items-center gap-2"><Loader2 className="h-3 w-3 animate-spin" /> thinking…</span>
             </div>
           </div>
@@ -118,7 +118,7 @@ function ThreadPage() {
         onSubmit={(e) => { e.preventDefault(); handleSend(); }}
         className="border-t border-border/50 p-4"
       >
-        <div className="flex items-end gap-2 rounded-2xl bg-white/80 p-2 backdrop-blur">
+        <div className="flex items-end gap-2 rounded-2xl bg-card/80 p-2 backdrop-blur">
           <Textarea
             ref={textareaRef}
             value={input}

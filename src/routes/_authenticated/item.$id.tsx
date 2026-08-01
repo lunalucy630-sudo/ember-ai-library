@@ -153,7 +153,7 @@ function ItemDetail() {
                 onClick={() => reanalyze.mutate()}
                 disabled={reanalyze.isPending || processing}
                 variant="outline"
-                className="rounded-full bg-white/70 backdrop-blur"
+                className="rounded-full bg-card/70 backdrop-blur"
               >
                 <RefreshCw className={`mr-1.5 h-4 w-4 ${reanalyze.isPending ? "animate-spin" : ""}`} />
                 Re-analyze
@@ -184,7 +184,7 @@ function ItemDetail() {
           )}
 
           {processing && (
-            <div className="mt-6 flex items-center gap-2 rounded-2xl bg-white/70 p-4 text-sm text-foreground/80">
+            <div className="mt-6 flex items-center gap-2 rounded-2xl bg-card/70 p-4 text-sm text-foreground/80">
               <Loader2 className="h-4 w-4 animate-spin text-coral" />
               Ember is understanding this item — transcript, summary, and tags coming up.
             </div>
@@ -197,7 +197,7 @@ function ItemDetail() {
           )}
 
           {item.source === "instagram" && !item.summary_short && (
-            <div className="mt-6 rounded-2xl bg-white/70 p-4 text-sm text-foreground/80">
+            <div className="mt-6 rounded-2xl bg-card/70 p-4 text-sm text-foreground/80">
               Instagram limits automated fetching for Reels. Use "Edit details" to add a
               description and thumbnail so Ember can remember what this is.
             </div>
@@ -220,7 +220,7 @@ function ItemDetail() {
               <SectionHeader title="Key takeaways" />
               <ul className="mt-3 space-y-2">
                 {item.key_points.map((p, i) => (
-                  <li key={i} className="flex gap-3 rounded-2xl bg-white/60 p-4 text-sm">
+                  <li key={i} className="flex gap-3 rounded-2xl bg-card/60 p-4 text-sm">
                     <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-gradient-to-br from-coral to-rose text-[10px] font-semibold text-primary-foreground">
                       {i + 1}
                     </span>
@@ -236,7 +236,7 @@ function ItemDetail() {
               <SectionHeader title="Important moments" />
               <div className="mt-3 space-y-1.5">
                 {(item.timestamps as Array<{ time: string; label: string }>).map((t, i) => (
-                  <div key={i} className="flex items-center gap-3 rounded-xl bg-white/60 px-4 py-2 text-sm">
+                  <div key={i} className="flex items-center gap-3 rounded-xl bg-card/60 px-4 py-2 text-sm">
                     <span className="rounded-md bg-gradient-to-r from-coral to-rose px-2 py-0.5 font-mono text-[11px] text-primary-foreground">
                       {t.time}
                     </span>
@@ -261,7 +261,7 @@ function ItemDetail() {
               <SectionHeader title="Tags" />
               <div className="mt-3 flex flex-wrap gap-1.5">
                 {item.tags.map((t) => (
-                  <span key={t} className="rounded-full bg-white/70 px-3 py-1 text-xs text-foreground/80">#{t}</span>
+                  <span key={t} className="rounded-full bg-card/70 px-3 py-1 text-xs text-foreground/80">#{t}</span>
                 ))}
               </div>
             </section>
@@ -270,7 +270,7 @@ function ItemDetail() {
           {item.transcript && (
             <section className="mt-8">
               <SectionHeader title="Transcript" />
-              <div className="mt-3 max-h-96 overflow-y-auto rounded-2xl bg-white/70 p-4 text-sm leading-relaxed text-foreground/85">
+              <div className="mt-3 max-h-96 overflow-y-auto rounded-2xl bg-card/70 p-4 text-sm leading-relaxed text-foreground/85">
                 {item.transcript.split("\n").map((line, i) => <p key={i} className="mb-2">{line}</p>)}
               </div>
             </section>
@@ -285,7 +285,7 @@ function ItemDetail() {
           {item.raw_content && item.kind === "note" && (
             <section className="mt-8">
               <SectionHeader title="Your note" />
-              <div className="prose prose-sm mt-3 max-w-none whitespace-pre-wrap rounded-2xl bg-white/70 p-4 text-foreground/85">
+              <div className="prose prose-sm mt-3 max-w-none whitespace-pre-wrap rounded-2xl bg-card/70 p-4 text-foreground/85">
                 {item.raw_content}
               </div>
             </section>
@@ -335,11 +335,11 @@ function CollectionMenu({ itemId, attached }: { itemId: string; attached: Array<
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="outline" className="rounded-full bg-white/70 backdrop-blur">
+        <Button variant="outline" className="rounded-full bg-card/70 backdrop-blur">
           <BookOpen className="mr-1.5 h-4 w-4" /> Collections
         </Button>
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-72 rounded-2xl border-white/70 bg-white/95 p-3 backdrop-blur-xl">
+      <PopoverContent align="end" className="w-72 rounded-2xl border-white/70 bg-card/95 p-3 backdrop-blur-xl">
         <div className="mb-2 px-1 text-[11px] uppercase tracking-widest text-muted-foreground">
           Add to shelves
         </div>
@@ -368,7 +368,7 @@ function CollectionMenu({ itemId, attached }: { itemId: string; attached: Array<
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
             placeholder="New collection…"
-            className="h-9 rounded-xl bg-white/80 text-sm"
+            className="h-9 rounded-xl bg-card/80 text-sm"
           />
           <Button
             size="icon"
@@ -453,7 +453,7 @@ function RelatedMaterials({
 
       <div className="mt-3 space-y-2">
         {related.length === 0 && (
-          <p className="rounded-2xl bg-white/60 p-4 text-sm text-muted-foreground">
+          <p className="rounded-2xl bg-card/60 p-4 text-sm text-muted-foreground">
             {t("item.relatedEmpty")}
           </p>
         )}
@@ -462,7 +462,7 @@ function RelatedMaterials({
           return (
             <div
               key={r.id}
-              className="flex items-center justify-between gap-3 rounded-2xl bg-white/60 px-4 py-3 text-sm"
+              className="flex items-center justify-between gap-3 rounded-2xl bg-card/60 px-4 py-3 text-sm"
             >
               {r.kind === "item" && target ? (
                 <Link
@@ -487,7 +487,7 @@ function RelatedMaterials({
               <button
                 onClick={() => remove.mutate(r.id)}
                 aria-label={t("item.remove")}
-                className="rounded-full p-1 text-muted-foreground hover:bg-white/80 hover:text-destructive"
+                className="rounded-full p-1 text-muted-foreground hover:bg-card/80 hover:text-destructive"
               >
                 <X className="h-3.5 w-3.5" />
               </button>
@@ -500,7 +500,7 @@ function RelatedMaterials({
         <Button
           variant="outline"
           size="sm"
-          className="rounded-full bg-white/70 backdrop-blur"
+          className="rounded-full bg-card/70 backdrop-blur"
           onClick={() => setMode(mode === "url" ? null : "url")}
         >
           <Link2 className="mr-1.5 h-3.5 w-3.5" /> {t("item.addLink")}
@@ -508,7 +508,7 @@ function RelatedMaterials({
         <Button
           variant="outline"
           size="sm"
-          className="rounded-full bg-white/70 backdrop-blur"
+          className="rounded-full bg-card/70 backdrop-blur"
           onClick={() => setMode(mode === "item" ? null : "item")}
         >
           <Library className="mr-1.5 h-3.5 w-3.5" /> {t("item.addFromLibrary")}
@@ -516,18 +516,18 @@ function RelatedMaterials({
       </div>
 
       {mode === "url" && (
-        <div className="mt-3 space-y-2 rounded-2xl bg-white/70 p-4">
+        <div className="mt-3 space-y-2 rounded-2xl bg-card/70 p-4">
           <Input
             value={url}
             onChange={(e) => setUrl(e.target.value)}
             placeholder="https://…"
-            className="rounded-xl bg-white/80"
+            className="rounded-xl bg-card/80"
           />
           <Input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder={t("item.linkTitle")}
-            className="rounded-xl bg-white/80"
+            className="rounded-xl bg-card/80"
           />
           <Button
             size="sm"
@@ -541,7 +541,7 @@ function RelatedMaterials({
       )}
 
       {mode === "item" && (
-        <div className="mt-3 max-h-64 space-y-1 overflow-y-auto rounded-2xl bg-white/70 p-3">
+        <div className="mt-3 max-h-64 space-y-1 overflow-y-auto rounded-2xl bg-card/70 p-3">
           {allItems
             .filter((i) => i.id !== itemId)
             .map((i) => (
@@ -601,7 +601,7 @@ function EditDetailsDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" className="rounded-full bg-white/70 backdrop-blur">
+        <Button variant="outline" className="rounded-full bg-card/70 backdrop-blur">
           <Pencil className="mr-1.5 h-4 w-4" /> {t("item.editDetails")}
         </Button>
       </DialogTrigger>

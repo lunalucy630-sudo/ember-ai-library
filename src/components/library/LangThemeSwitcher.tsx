@@ -42,7 +42,7 @@ export function LangThemeSwitcher() {
         <PopoverTrigger asChild>
           <button
             aria-label={t("settings.language")}
-            className="flex h-9 w-9 items-center justify-center rounded-full text-foreground/70 hover:bg-white/60"
+            className="flex h-9 w-9 items-center justify-center rounded-full text-foreground/70 hover:bg-card/60"
           >
             <Languages className="h-4 w-4" />
           </button>
@@ -68,7 +68,7 @@ export function LangThemeSwitcher() {
         <PopoverTrigger asChild>
           <button
             aria-label={t("settings.theme")}
-            className="flex h-9 w-9 items-center justify-center rounded-full text-foreground/70 hover:bg-white/60"
+            className="flex h-9 w-9 items-center justify-center rounded-full text-foreground/70 hover:bg-card/60"
           >
             <Palette className="h-4 w-4" />
           </button>

@@ -113,7 +113,7 @@ function ItemCard({ item }: { item: LibraryItem }) {
           {item.tags.slice(0, 4).map((t) => (
             <span
               key={t}
-              className="rounded-full bg-white/70 px-2.5 py-0.5 text-[11px] text-foreground/70 backdrop-blur"
+              className="rounded-full bg-card/70 px-2.5 py-0.5 text-[11px] text-foreground/70 backdrop-blur"
             >
               #{t}
             </span>

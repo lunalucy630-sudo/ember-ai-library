@@ -55,7 +55,7 @@ function ChatLayout() {
             <div
               key={th.id}
               className={`group flex items-center gap-1 rounded-xl px-1 ${
-                activeId === th.id ? "bg-gradient-to-r from-coral/20 to-rose/15" : "hover:bg-white/60"
+                activeId === th.id ? "bg-gradient-to-r from-coral/20 to-rose/15" : "hover:bg-card/60"
               }`}
             >
               <Link

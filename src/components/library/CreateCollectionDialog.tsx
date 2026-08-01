@@ -42,7 +42,7 @@ export function CreateCollectionDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="rounded-3xl border-white/60 bg-white/90 backdrop-blur-xl sm:max-w-md">
+      <DialogContent className="rounded-3xl border-white/60 bg-card/90 backdrop-blur-xl sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="font-display text-xl">New collection</DialogTitle>
         </DialogHeader>
@@ -54,7 +54,7 @@ export function CreateCollectionDialog({
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. Recipes, Leadership, University"
-              className="rounded-xl bg-white/80"
+              className="rounded-xl bg-card/80"
             />
           </div>
           <div className="space-y-1.5">
@@ -64,7 +64,7 @@ export function CreateCollectionDialog({
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="A quiet corner of your library"
-              className="rounded-xl bg-white/80"
+              className="rounded-xl bg-card/80"
             />
           </div>
         </div>

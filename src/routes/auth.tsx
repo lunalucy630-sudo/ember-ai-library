@@ -221,7 +221,7 @@ function AuthPage() {
             onClick={handleGoogle}
             disabled={busy}
             variant="outline"
-            className="mt-4 w-full rounded-full border-white/70 bg-white/70 py-6 backdrop-blur"
+            className="mt-4 w-full rounded-full border-white/70 bg-card/70 py-6 backdrop-blur"
           >
             <GoogleIcon />
             {thirdPartyBlocked
@@ -269,7 +269,7 @@ function AuthPage() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder={t("auth.namePh")}
-                  className="rounded-xl bg-white/70"
+                  className="rounded-xl bg-card/70"
                 />
               </div>
             )}
@@ -282,7 +282,7 @@ function AuthPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
-                className="rounded-xl bg-white/70"
+                className="rounded-xl bg-card/70"
               />
             </div>
             <div className="space-y-1.5">
@@ -295,7 +295,7 @@ function AuthPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="rounded-xl bg-white/70"
+                className="rounded-xl bg-card/70"
               />
             </div>
             <Button
@@ -406,7 +406,7 @@ function SignInDebugPanel(props: {
       </button>
 
       {open && (
-        <div className="mt-2 space-y-3 rounded-2xl border border-white/60 bg-white/60 p-4 text-sm backdrop-blur animate-float-in">
+        <div className="mt-2 space-y-3 rounded-2xl border border-white/60 bg-card/60 p-4 text-sm backdrop-blur animate-float-in">
           {info && (
             <div className="rounded-xl bg-rose/20 p-3">
               <div className="flex items-start gap-2">
@@ -450,7 +450,7 @@ function SignInDebugPanel(props: {
           {lastError?.raw && (
             <details className="text-xs text-muted-foreground">
               <summary className="cursor-pointer">Technical details</summary>
-              <pre className="mt-1.5 overflow-x-auto rounded-lg bg-white/70 p-2 text-[11px]">{lastError.raw}</pre>
+              <pre className="mt-1.5 overflow-x-auto rounded-lg bg-card/70 p-2 text-[11px]">{lastError.raw}</pre>
             </details>
           )}
         </div>
