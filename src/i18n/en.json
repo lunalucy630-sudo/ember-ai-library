@@ -22,10 +22,22 @@
     "signIn": "Sign in",
     "signUpCta": "Start your library",
     "features": {
-      "video": { "title": "Videos, first", "body": "Upload MP4s or paste YouTube, TikTok & Reels links." },
-      "ai": { "title": "AI watches", "body": "Transcripts, key moments, summaries, and tags — automatic." },
-      "library": { "title": "Elegant library", "body": "Collections instead of folders. One item, many places." },
-      "chat": { "title": "Chat with it", "body": "Ask questions across everything you've ever saved." }
+      "video": {
+        "title": "Videos, first",
+        "body": "Upload MP4s or paste YouTube, TikTok & Reels links."
+      },
+      "ai": {
+        "title": "AI watches",
+        "body": "Transcripts, key moments, summaries, and tags — automatic."
+      },
+      "library": {
+        "title": "Elegant library",
+        "body": "Collections instead of folders. One item, many places."
+      },
+      "chat": {
+        "title": "Chat with it",
+        "body": "Ask questions across everything you've ever saved."
+      }
     }
   },
   "auth": {
@@ -174,6 +186,19 @@
     "save": "Save",
     "delete": "Delete",
     "close": "Close",
-    "loading": "Loading…"
+    "loading": "Loading…",
+    "back": "Back",
+    "tryAgain": "Try again.",
+    "create": "Create"
+  },
+  "collections": {
+    "created": "Collection created",
+    "createFailed": "Could not create collection",
+    "new": "New collection",
+    "name": "Name",
+    "namePh": "e.g. Recipes, Leadership, University",
+    "descOptional": "Description (optional)",
+    "descPh": "A quiet corner of your library",
+    "creating": "Creating…"
   }
 }

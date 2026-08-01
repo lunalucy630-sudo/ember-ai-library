@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
@@ -11,6 +12,7 @@ export const Route = createFileRoute("/_authenticated/search")({
 });
 
 function SearchPage() {
+  const { t } = useTranslation();
   const [q, setQ] = useState("");
   const [results, setResults] = useState<LibraryItem[] | null>(null);
 
@@ -22,9 +24,9 @@ function SearchPage() {
   return (
     <div className="mx-auto max-w-4xl">
       <header className="mb-8">
-        <h1 className="font-display text-4xl font-semibold tracking-tight">Search</h1>
+        <h1 className="font-display text-4xl font-semibold tracking-tight">{t("search.title")}</h1>
         <p className="mt-2 text-muted-foreground">
-          Ask in plain language. Lumen looks across titles, transcripts, tags, and notes.
+          {t("search.sub")}
         </p>
       </header>
 
@@ -39,7 +41,7 @@ function SearchPage() {
         <Input
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="e.g. the pasta recipe video, notes on empathy…"
+          placeholder={t("search.placeholder")}
           className="h-11 flex-1 border-none bg-transparent shadow-none focus-visible:ring-0"
         />
         <Button
@@ -47,7 +49,7 @@ function SearchPage() {
           disabled={!q.trim() || mut.isPending}
           className="rounded-full bg-gradient-to-r from-coral to-rose px-5 text-primary-foreground shadow-[var(--shadow-soft)]"
         >
-          {mut.isPending ? "Looking…" : "Search"}
+          {mut.isPending ? t("search.searching") : t("search.search")}
         </Button>
       </form>
 
@@ -55,11 +57,11 @@ function SearchPage() {
         {results === null ? (
           <div className="glass rounded-3xl p-8 text-center text-sm text-muted-foreground">
             <Sparkles className="mx-auto mb-2 h-5 w-5 text-coral" />
-            Try “videos about leadership”, “recipe with chicken”, or “lecture about child development”.
+            {t("search.hint")}
           </div>
         ) : results.length === 0 ? (
           <div className="glass rounded-3xl p-8 text-center text-sm text-muted-foreground">
-            Nothing matched. Try different words, or ask Lumen in chat.
+            {t("search.noMatch")}
           </div>
         ) : (
           <div className="space-y-3">

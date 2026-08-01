@@ -22,10 +22,22 @@
     "signIn": "Autentificare",
     "signUpCta": "Începe biblioteca ta",
     "features": {
-      "video": { "title": "Video, în primul rând", "body": "Încarcă MP4 sau adaugă linkuri de YouTube, TikTok și Reels." },
-      "ai": { "title": "AI-ul urmărește", "body": "Transcrieri, momente-cheie, rezumate și etichete — automat." },
-      "library": { "title": "Bibliotecă elegantă", "body": "Colecții în loc de foldere. Un element, mai multe rafturi." },
-      "chat": { "title": "Discută cu ea", "body": "Pune întrebări despre tot ce ai salvat vreodată." }
+      "video": {
+        "title": "Video, în primul rând",
+        "body": "Încarcă MP4 sau adaugă linkuri de YouTube, TikTok și Reels."
+      },
+      "ai": {
+        "title": "AI-ul urmărește",
+        "body": "Transcrieri, momente-cheie, rezumate și etichete — automat."
+      },
+      "library": {
+        "title": "Bibliotecă elegantă",
+        "body": "Colecții în loc de foldere. Un element, mai multe rafturi."
+      },
+      "chat": {
+        "title": "Discută cu ea",
+        "body": "Pune întrebări despre tot ce ai salvat vreodată."
+      }
     }
   },
   "auth": {
@@ -175,6 +187,19 @@
     "save": "Salvează",
     "delete": "Șterge",
     "close": "Închide",
-    "loading": "Se încarcă…"
+    "loading": "Se încarcă…",
+    "back": "Înapoi",
+    "tryAgain": "Încearcă din nou.",
+    "create": "Creează"
+  },
+  "collections": {
+    "created": "Colecție creată",
+    "createFailed": "Nu am putut crea colecția",
+    "new": "Colecție nouă",
+    "name": "Nume",
+    "namePh": "ex. Rețete, Leadership, Facultate",
+    "descOptional": "Descriere (opțional)",
+    "descPh": "Un colț liniștit din biblioteca ta",
+    "creating": "Se creează…"
   }
 }

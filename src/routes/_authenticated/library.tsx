@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { listItems, type LibraryItem } from "@/lib/library.functions";
@@ -29,6 +30,7 @@ const kindIcon = {
 } as const;
 
 function LibraryPage() {
+  const { t } = useTranslation();
   const { data: items = [], isLoading } = useQuery({
     queryKey: ["items"],
     queryFn: () => listItems(),
@@ -43,17 +45,17 @@ function LibraryPage() {
       <header className="mb-8 flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="font-display text-4xl font-semibold tracking-tight md:text-5xl">
-            Your library
+            {t("library.title")}
           </h1>
           <p className="mt-2 text-muted-foreground">
             {items.length === 0
-              ? "Your quiet corner of the internet. Add something to begin."
-              : `${items.length} ${items.length === 1 ? "item" : "items"} — remembered and understood.`}
+              ? t("library.emptyLead")
+              : t("library.count", { count: items.length })}
           </p>
         </div>
         <Link to="/upload">
           <Button className="rounded-full bg-gradient-to-r from-coral to-rose px-5 text-primary-foreground shadow-[var(--shadow-soft)]">
-            <Plus className="mr-1.5 h-4 w-4" /> Add to library
+            <Plus className="mr-1.5 h-4 w-4" /> {t("library.add")}
           </Button>
         </Link>
       </header>
@@ -78,6 +80,7 @@ function LibraryPage() {
 }
 
 function ItemCard({ item }: { item: LibraryItem }) {
+  const { t } = useTranslation();
   const Icon = kindIcon[item.kind] ?? StickyNote;
   const processing = item.status === "pending" || item.status === "processing";
 
@@ -102,7 +105,7 @@ function ItemCard({ item }: { item: LibraryItem }) {
 
       <p className="mt-2 line-clamp-3 min-h-[3.5rem] text-sm text-muted-foreground">
         {item.summary_short ??
-          (processing ? "Lumen is understanding this…" : item.status === "failed" ? item.error_message ?? "Analysis failed." : "Not analyzed yet.")}
+          (processing ? t("library.processing") : item.status === "failed" ? item.error_message ?? t("library.failed") : t("library.notAnalyzed"))}
       </p>
 
       {item.tags && item.tags.length > 0 && (
@@ -110,7 +113,7 @@ function ItemCard({ item }: { item: LibraryItem }) {
           {item.tags.slice(0, 4).map((t) => (
             <span
               key={t}
-              className="rounded-full bg-white/70 px-2.5 py-0.5 text-[11px] text-foreground/70 backdrop-blur"
+              className="rounded-full bg-card/70 px-2.5 py-0.5 text-[11px] text-foreground/70 backdrop-blur"
             >
               #{t}
             </span>
@@ -136,18 +139,19 @@ function ItemCard({ item }: { item: LibraryItem }) {
 }
 
 function EmptyState() {
+  const { t } = useTranslation();
   return (
     <div className="glass mx-auto mt-8 max-w-xl rounded-3xl p-10 text-center">
       <div className="mx-auto mb-4 grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br from-coral to-rose text-primary-foreground shadow-[var(--shadow-glow)]">
         <Sparkles className="h-6 w-6" />
       </div>
-      <h2 className="font-display text-2xl font-semibold">Your library is waiting</h2>
+      <h2 className="font-display text-2xl font-semibold">{t("library.emptyTitle")}</h2>
       <p className="mt-2 text-sm text-muted-foreground">
-        Upload a video, paste a YouTube link, or drop in a PDF. Lumen will read, watch, and remember everything.
+        {t("library.emptyBody")}
       </p>
       <Link to="/upload">
         <Button className="mt-6 rounded-full bg-gradient-to-r from-coral to-rose px-6 py-5 text-primary-foreground shadow-[var(--shadow-soft)]">
-          <Plus className="mr-1.5 h-4 w-4" /> Add your first item
+          <Plus className="mr-1.5 h-4 w-4" /> {t("library.emptyCta")}
         </Button>
       </Link>
     </div>

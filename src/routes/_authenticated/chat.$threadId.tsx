@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getThread, sendChatMessage } from "@/lib/chat.functions";
@@ -12,6 +13,7 @@ export const Route = createFileRoute("/_authenticated/chat/$threadId")({
 });
 
 function ThreadPage() {
+  const { t } = useTranslation();
   const { threadId } = Route.useParams();
   const qc = useQueryClient();
   const [input, setInput] = useState("");
@@ -58,9 +60,9 @@ function ThreadPage() {
               <div className="mx-auto mb-3 grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-coral to-rose text-primary-foreground">
                 <Sparkles className="h-5 w-5" />
               </div>
-              <h3 className="font-display text-xl">Ask about anything you've saved</h3>
+              <h3 className="font-display text-xl">{t("chat.welcome")}</h3>
               <p className="mt-2 text-sm text-muted-foreground">
-                Lumen only uses your library. It'll cite the items it references.
+                {t("chat.welcomeSub")}
               </p>
             </div>
           </div>
@@ -69,7 +71,7 @@ function ThreadPage() {
             <div key={m.id} className={`flex gap-3 ${m.role === "user" ? "flex-row-reverse" : ""}`}>
               <div className={`grid h-8 w-8 shrink-0 place-items-center rounded-full ${
                 m.role === "user"
-                  ? "bg-white/70 text-foreground"
+                  ? "bg-card/70 text-foreground"
                   : "bg-gradient-to-br from-coral to-rose text-primary-foreground"
               }`}>
                 {m.role === "user" ? <User className="h-4 w-4" /> : <Sparkles className="h-4 w-4" />}
@@ -77,7 +79,7 @@ function ThreadPage() {
               <div className={`max-w-[80%] rounded-3xl px-4 py-3 text-sm ${
                 m.role === "user"
                   ? "bg-gradient-to-r from-coral/25 to-rose/20 text-foreground"
-                  : "bg-white/80 text-foreground/90"
+                  : "bg-card/80 text-foreground/90"
               }`}>
                 <div className="prose prose-sm max-w-none">
                   <ReactMarkdown>{stripCitations(m.content)}</ReactMarkdown>
@@ -89,7 +91,7 @@ function ThreadPage() {
                         key={id}
                         to="/item/$id"
                         params={{ id }}
-                        className="rounded-full bg-white/70 px-2.5 py-0.5 text-[11px] text-foreground/80 hover:bg-white"
+                        className="rounded-full bg-card/70 px-2.5 py-0.5 text-[11px] text-foreground/80 hover:bg-white"
                       >
                         cited item
                       </Link>
@@ -105,7 +107,7 @@ function ThreadPage() {
             <div className="grid h-8 w-8 place-items-center rounded-full bg-gradient-to-br from-coral to-rose text-primary-foreground">
               <Sparkles className="h-4 w-4" />
             </div>
-            <div className="rounded-3xl bg-white/80 px-4 py-3 text-sm text-foreground/70">
+            <div className="rounded-3xl bg-card/80 px-4 py-3 text-sm text-foreground/70">
               <span className="inline-flex items-center gap-2"><Loader2 className="h-3 w-3 animate-spin" /> thinking…</span>
             </div>
           </div>
@@ -116,7 +118,7 @@ function ThreadPage() {
         onSubmit={(e) => { e.preventDefault(); handleSend(); }}
         className="border-t border-border/50 p-4"
       >
-        <div className="flex items-end gap-2 rounded-2xl bg-white/80 p-2 backdrop-blur">
+        <div className="flex items-end gap-2 rounded-2xl bg-card/80 p-2 backdrop-blur">
           <Textarea
             ref={textareaRef}
             value={input}
@@ -124,7 +126,7 @@ function ThreadPage() {
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); }
             }}
-            placeholder="Ask Lumen about your library…"
+            placeholder={t("chat.placeholder")}
             className="min-h-[46px] max-h-40 resize-none border-none bg-transparent shadow-none focus-visible:ring-0"
           />
           <Button

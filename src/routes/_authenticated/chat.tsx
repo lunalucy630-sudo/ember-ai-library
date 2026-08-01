@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { createFileRoute, Outlet, Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createThread, deleteThread, listThreads } from "@/lib/chat.functions";
@@ -9,6 +10,7 @@ export const Route = createFileRoute("/_authenticated/chat")({
 });
 
 function ChatLayout() {
+  const { t } = useTranslation();
   const state = useRouterState();
   const activeId = state.matches.find((m) => m.params && "threadId" in m.params)?.params.threadId as string | undefined;
   const navigate = useNavigate();
@@ -43,28 +45,28 @@ function ChatLayout() {
           disabled={create.isPending}
           className="w-full rounded-full bg-gradient-to-r from-coral to-rose text-primary-foreground shadow-[var(--shadow-soft)]"
         >
-          <Plus className="mr-1.5 h-4 w-4" /> New chat
+          <Plus className="mr-1.5 h-4 w-4" /> {t("chat.newChat")}
         </Button>
         <div className="mt-4 space-y-1 overflow-y-auto">
           {threads.length === 0 && (
-            <p className="px-2 py-3 text-xs text-muted-foreground">Ask Lumen anything about your library.</p>
+            <p className="px-2 py-3 text-xs text-muted-foreground">{t("chat.empty")}</p>
           )}
-          {threads.map((t) => (
+          {threads.map((th) => (
             <div
-              key={t.id}
+              key={th.id}
               className={`group flex items-center gap-1 rounded-xl px-1 ${
-                activeId === t.id ? "bg-gradient-to-r from-coral/20 to-rose/15" : "hover:bg-white/60"
+                activeId === th.id ? "bg-gradient-to-r from-coral/20 to-rose/15" : "hover:bg-card/60"
               }`}
             >
               <Link
                 to="/chat/$threadId"
-                params={{ threadId: t.id }}
+                params={{ threadId: th.id }}
                 className="flex-1 truncate rounded-xl px-2 py-2 text-sm"
               >
-                {t.title || "New conversation"}
+                {th.title || t("chat.newChat")}
               </Link>
               <button
-                onClick={() => confirm("Delete this conversation?") && del.mutate(t.id)}
+                onClick={() => confirm(t("chat.deletePrompt")) && del.mutate(th.id)}
                 className="opacity-0 rounded-lg p-1.5 text-muted-foreground transition-opacity hover:bg-destructive/10 hover:text-destructive group-hover:opacity-100"
               >
                 <Trash2 className="h-3.5 w-3.5" />
@@ -83,15 +85,15 @@ function ChatLayout() {
               <div className="mx-auto mb-4 grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br from-coral to-rose text-primary-foreground shadow-[var(--shadow-glow)]">
                 <MessagesSquare className="h-6 w-6" />
               </div>
-              <h2 className="font-display text-2xl font-semibold">Ask Lumen</h2>
+              <h2 className="font-display text-2xl font-semibold">{t("chat.askEmber")}</h2>
               <p className="mt-2 text-sm text-muted-foreground">
-                Chat with your library. “Find every video about leadership.” “Summarize the psychology lectures.” “What did I save about active listening?”
+                {t("chat.promptExamples")}
               </p>
               <Button
                 onClick={() => create.mutate()}
                 className="mt-6 rounded-full bg-gradient-to-r from-coral to-rose px-6 py-5 text-primary-foreground shadow-[var(--shadow-soft)]"
               >
-                <Plus className="mr-1.5 h-4 w-4" /> Start a conversation
+                <Plus className="mr-1.5 h-4 w-4" /> {t("chat.start")}
               </Button>
             </div>
           </div>

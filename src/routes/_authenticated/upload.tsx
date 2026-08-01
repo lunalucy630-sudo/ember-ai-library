@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRef, useState } from "react";
@@ -21,25 +22,26 @@ export const Route = createFileRoute("/_authenticated/upload")({
 });
 
 function UploadPage() {
+  const { t } = useTranslation();
   return (
     <div className="mx-auto max-w-2xl">
       <header className="mb-8">
-        <h1 className="font-display text-4xl font-semibold tracking-tight">Add to your library</h1>
+        <h1 className="font-display text-4xl font-semibold tracking-tight">{t("upload.title")}</h1>
         <p className="mt-2 text-muted-foreground">
-          Upload a file, paste a link, or capture a quick note. Lumen will do the rest.
+          {t("upload.sub")}
         </p>
       </header>
 
       <Tabs defaultValue="upload" className="w-full">
-        <TabsList className="mb-6 grid h-auto w-full grid-cols-3 rounded-2xl bg-white/70 p-1.5 backdrop-blur">
+        <TabsList className="mb-6 grid h-auto w-full grid-cols-3 rounded-2xl bg-card/70 p-1.5 backdrop-blur">
           <TabsTrigger value="upload" className="rounded-xl py-2.5 data-[state=active]:bg-gradient-to-r data-[state=active]:from-coral data-[state=active]:to-rose data-[state=active]:text-primary-foreground">
-            <UploadIcon className="mr-2 h-4 w-4" /> Upload
+            <UploadIcon className="mr-2 h-4 w-4" /> {t("upload.tabUpload")}
           </TabsTrigger>
           <TabsTrigger value="link" className="rounded-xl py-2.5 data-[state=active]:bg-gradient-to-r data-[state=active]:from-coral data-[state=active]:to-rose data-[state=active]:text-primary-foreground">
-            <LinkIcon className="mr-2 h-4 w-4" /> Paste link
+            <LinkIcon className="mr-2 h-4 w-4" /> {t("upload.tabLink")}
           </TabsTrigger>
           <TabsTrigger value="note" className="rounded-xl py-2.5 data-[state=active]:bg-gradient-to-r data-[state=active]:from-coral data-[state=active]:to-rose data-[state=active]:text-primary-foreground">
-            <StickyNote className="mr-2 h-4 w-4" /> Note
+            <StickyNote className="mr-2 h-4 w-4" /> {t("upload.tabNote")}
           </TabsTrigger>
         </TabsList>
 
@@ -52,6 +54,7 @@ function UploadPage() {
 }
 
 function UploadForm() {
+  const { t } = useTranslation();
   const [file, setFile] = useState<File | null>(null);
   const [title, setTitle] = useState("");
   const [progress, setProgress] = useState(0);
@@ -103,7 +106,7 @@ function UploadForm() {
         .catch((e) => toast.error("Analysis failed", { description: e instanceof Error ? e.message : "" }));
 
       setProgress(100);
-      toast.success("Added to your library", { description: "Lumen is understanding it now." });
+      toast.success(t("upload.savedToast"), { description: t("upload.understandingToast") });
       navigate({ to: "/item/$id", params: { id: item.id } });
     } catch (e) {
       toast.error("Upload failed", { description: e instanceof Error ? e.message : "" });
@@ -118,7 +121,7 @@ function UploadForm() {
         onDrop={onDrop}
         onDragOver={(e) => e.preventDefault()}
         onClick={() => inputRef.current?.click()}
-        className="grid cursor-pointer place-items-center rounded-2xl border-2 border-dashed border-rose/50 bg-white/40 px-6 py-14 text-center transition-colors hover:bg-white/60"
+        className="grid cursor-pointer place-items-center rounded-2xl border-2 border-dashed border-rose/50 bg-card/40 px-6 py-14 text-center transition-colors hover:bg-card/60"
       >
         <div className="grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br from-coral to-rose text-primary-foreground shadow-[var(--shadow-glow)]">
           <UploadIcon className="h-6 w-6" />
@@ -149,11 +152,11 @@ function UploadForm() {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Give it a lovely name"
-            className="rounded-xl bg-white/80"
+            className="rounded-xl bg-card/80"
           />
         </div>
         {busy && (
-          <div className="h-2 overflow-hidden rounded-full bg-white/70">
+          <div className="h-2 overflow-hidden rounded-full bg-card/70">
             <div
               className="h-full rounded-full bg-gradient-to-r from-coral to-rose transition-all"
               style={{ width: `${progress}%` }}
@@ -173,6 +176,7 @@ function UploadForm() {
 }
 
 function LinkForm() {
+  const { t } = useTranslation();
   const [url, setUrl] = useState("");
   const [title, setTitle] = useState("");
   const navigate = useNavigate();
@@ -188,7 +192,7 @@ function LinkForm() {
     },
     onSuccess: (item) => {
       qc.invalidateQueries({ queryKey: ["items"] });
-      toast.success("Saved", { description: "Lumen is analyzing the link." });
+      toast.success(t("upload.linkSavedToast"), { description: t("upload.linkAnalyzingToast") });
       navigate({ to: "/item/$id", params: { id: item.id } });
     },
     onError: (e) => toast.error("Could not save", { description: e instanceof Error ? e.message : "" }),
@@ -197,27 +201,27 @@ function LinkForm() {
   return (
     <div className="glass rounded-3xl p-6">
       <div className="mb-3 flex items-center gap-2 text-sm text-muted-foreground">
-        <Sparkles className="h-4 w-4 text-coral" /> Works with YouTube, TikTok, Instagram, and any web link.
+        <Sparkles className="h-4 w-4 text-coral" /> {t("upload.linkHelp")}
       </div>
       <div className="space-y-3">
         <div className="space-y-1.5">
-          <Label htmlFor="url">URL</Label>
+          <Label htmlFor="url">{t("upload.url")}</Label>
           <Input
             id="url"
             value={url}
             onChange={(e) => setUrl(e.target.value)}
-            placeholder="https://www.youtube.com/watch?v=…"
-            className="rounded-xl bg-white/80"
+            placeholder={t("upload.urlPh")}
+            className="rounded-xl bg-card/80"
           />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="ltitle">Title (optional)</Label>
+          <Label htmlFor="ltitle">{t("upload.titleOptional")}</Label>
           <Input
             id="ltitle"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="Autofills if left empty"
-            className="rounded-xl bg-white/80"
+            placeholder={t("upload.titleAutofill")}
+            className="rounded-xl bg-card/80"
           />
         </div>
         <Button
@@ -225,7 +229,7 @@ function LinkForm() {
           disabled={!url || mut.isPending}
           className="w-full rounded-full bg-gradient-to-r from-coral to-rose py-6 text-primary-foreground shadow-[var(--shadow-soft)]"
         >
-          {mut.isPending ? "Saving…" : "Save to library"}
+          {mut.isPending ? t("upload.saving") : t("upload.saveLink")}
         </Button>
       </div>
     </div>
@@ -233,6 +237,7 @@ function LinkForm() {
 }
 
 function NoteForm() {
+  const { t } = useTranslation();
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const navigate = useNavigate();
@@ -248,7 +253,7 @@ function NoteForm() {
     },
     onSuccess: (item) => {
       qc.invalidateQueries({ queryKey: ["items"] });
-      toast.success("Note added");
+      toast.success(t("upload.noteAdded"));
       navigate({ to: "/item/$id", params: { id: item.id } });
     },
     onError: (e) => toast.error("Could not save", { description: e instanceof Error ? e.message : "" }),
@@ -258,23 +263,23 @@ function NoteForm() {
     <div className="glass rounded-3xl p-6">
       <div className="space-y-3">
         <div className="space-y-1.5">
-          <Label htmlFor="ntitle">Title</Label>
+          <Label htmlFor="ntitle">{t("upload.titleLabel")}</Label>
           <Input
             id="ntitle"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="A thought worth remembering"
-            className="rounded-xl bg-white/80"
+            placeholder={t("upload.noteTitle")}
+            className="rounded-xl bg-card/80"
           />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="ncontent">Note</Label>
+          <Label htmlFor="ncontent">{t("upload.noteBody")}</Label>
           <Textarea
             id="ncontent"
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            placeholder="Type freely — Lumen will summarize and tag it."
-            className="min-h-[180px] rounded-2xl bg-white/80"
+            placeholder={t("upload.notePh")}
+            className="min-h-[180px] rounded-2xl bg-card/80"
           />
         </div>
         <Button
@@ -282,7 +287,7 @@ function NoteForm() {
           disabled={!title || !content || mut.isPending}
           className="w-full rounded-full bg-gradient-to-r from-coral to-rose py-6 text-primary-foreground shadow-[var(--shadow-soft)]"
         >
-          {mut.isPending ? "Saving…" : "Save note"}
+          {mut.isPending ? t("upload.saving") : t("upload.saveNote")}
         </Button>
       </div>
     </div>

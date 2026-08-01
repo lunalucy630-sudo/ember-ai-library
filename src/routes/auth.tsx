@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -6,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Sparkles, ArrowLeft, ExternalLink, Info, ChevronDown, ChevronUp, CheckCircle2, XCircle, AlertCircle } from "lucide-react";
+import { Flame, ArrowLeft, ExternalLink, Info, ChevronDown, ChevronUp, CheckCircle2, XCircle, AlertCircle } from "lucide-react";
 import { z } from "zod";
 
 const searchSchema = z.object({
@@ -21,6 +22,7 @@ export const Route = createFileRoute("/auth")({
 });
 
 function AuthPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const search = Route.useSearch();
   const [mode, setMode] = useState<"signin" | "signup">(search.mode ?? "signin");
@@ -96,7 +98,7 @@ function AuthPage() {
   const handleGoogle = async () => {
     setBusy(true);
     try {
-      sessionStorage.setItem("lumen:next", nextPath);
+      sessionStorage.setItem("ember:next", nextPath);
     } catch {
       /* ignore */
     }
@@ -156,7 +158,7 @@ function AuthPage() {
           },
         });
         if (error) throw error;
-        toast.success("Welcome to Lumen", { description: "Check your inbox to confirm your email." });
+        toast.success(t("auth.welcomeToast"), { description: t("auth.confirmInbox") });
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
@@ -178,26 +180,26 @@ function AuthPage() {
 
       <div className="relative z-10 mx-auto flex min-h-screen max-w-md flex-col justify-center px-6 py-12">
         <Link to="/" className="mb-6 inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
-          <ArrowLeft className="h-4 w-4" /> Back
+          <ArrowLeft className="h-4 w-4" /> {t("common.back")}
         </Link>
         <div className="glass rounded-3xl p-8 animate-float-in">
           <div className="mb-6 flex items-center gap-2">
             <div className="grid h-10 w-10 place-items-center rounded-2xl bg-gradient-to-br from-coral to-rose text-primary-foreground shadow-[var(--shadow-glow)]">
-              <Sparkles className="h-5 w-5" />
+              <Flame className="h-5 w-5" />
             </div>
             <div>
-              <div className="font-display text-lg font-semibold leading-none">Lumen</div>
-              <div className="text-xs text-muted-foreground">Your AI video library</div>
+              <div className="font-display text-lg font-semibold leading-none">{t("brand.name")}</div>
+              <div className="text-xs text-muted-foreground">{t("brand.tagline")}</div>
             </div>
           </div>
 
           <h1 className="font-display text-2xl font-semibold tracking-tight">
-            {mode === "signup" ? "Create your library" : "Welcome back"}
+            {mode === "signup" ? t("auth.createLibrary") : t("auth.welcomeBack")}
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
             {mode === "signup"
               ? "A cozy place for everything you want to remember."
-              : "Sign in to open your library."}
+              : t("auth.welcomeSubSignIn")}
           </p>
 
 
@@ -219,12 +221,12 @@ function AuthPage() {
             onClick={handleGoogle}
             disabled={busy}
             variant="outline"
-            className="mt-4 w-full rounded-full border-white/70 bg-white/70 py-6 backdrop-blur"
+            className="mt-4 w-full rounded-full border-white/70 bg-card/70 py-6 backdrop-blur"
           >
             <GoogleIcon />
             {thirdPartyBlocked
-              ? "Continue with Google (new tab)"
-              : "Continue with Google"}
+              ? t("auth.continueGoogleNewTab")
+              : t("auth.continueGoogle")}
           </Button>
 
           <button
@@ -233,7 +235,7 @@ function AuthPage() {
             className="mt-2 inline-flex w-full items-center justify-center gap-1.5 rounded-full px-3 py-2 text-xs text-muted-foreground hover:text-foreground"
           >
             <ExternalLink className="h-3.5 w-3.5" />
-            {inIframe ? "Google sign-in not working? Open in a new tab" : "Open this page in a new tab"}
+            {inIframe ? t("auth.notWorkingOpenNewTab") : t("auth.openNewTab")}
           </button>
 
           <SignInDebugPanel
@@ -255,24 +257,24 @@ function AuthPage() {
 
 
           <div className="my-5 flex items-center gap-3 text-xs text-muted-foreground">
-            <div className="h-px flex-1 bg-border" /> or <div className="h-px flex-1 bg-border" />
+            <div className="h-px flex-1 bg-border" /> {t("auth.or")} <div className="h-px flex-1 bg-border" />
           </div>
 
           <form onSubmit={handleEmail} className="space-y-3">
             {mode === "signup" && (
               <div className="space-y-1.5">
-                <Label htmlFor="name">Name</Label>
+                <Label htmlFor="name">{t("auth.name")}</Label>
                 <Input
                   id="name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="Your name"
-                  className="rounded-xl bg-white/70"
+                  placeholder={t("auth.namePh")}
+                  className="rounded-xl bg-card/70"
                 />
               </div>
             )}
             <div className="space-y-1.5">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t("auth.email")}</Label>
               <Input
                 id="email"
                 type="email"
@@ -280,11 +282,11 @@ function AuthPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
-                className="rounded-xl bg-white/70"
+                className="rounded-xl bg-card/70"
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">{t("auth.password")}</Label>
               <Input
                 id="password"
                 type="password"
@@ -293,7 +295,7 @@ function AuthPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="rounded-xl bg-white/70"
+                className="rounded-xl bg-card/70"
               />
             </div>
             <Button
@@ -301,17 +303,17 @@ function AuthPage() {
               disabled={busy}
               className="w-full rounded-full bg-gradient-to-r from-coral to-rose py-6 text-primary-foreground shadow-[var(--shadow-soft)] hover:opacity-95"
             >
-              {busy ? "Please wait…" : mode === "signup" ? "Create account" : "Sign in"}
+              {busy ? t("auth.please") : mode === "signup" ? t("auth.createAccount") : t("auth.signIn")}
             </Button>
           </form>
 
           <p className="mt-5 text-center text-sm text-muted-foreground">
-            {mode === "signup" ? "Already have an account? " : "New to Lumen? "}
+            {mode === "signup" ? t("auth.haveAccount") + " " : t("auth.newHere") + " "}
             <button
               onClick={() => setMode(mode === "signup" ? "signin" : "signup")}
               className="font-medium text-foreground underline-offset-2 hover:underline"
             >
-              {mode === "signup" ? "Sign in" : "Create one"}
+              {mode === "signup" ? t("auth.signIn") : t("auth.createOne")}
             </button>
           </p>
         </div>
@@ -404,7 +406,7 @@ function SignInDebugPanel(props: {
       </button>
 
       {open && (
-        <div className="mt-2 space-y-3 rounded-2xl border border-white/60 bg-white/60 p-4 text-sm backdrop-blur animate-float-in">
+        <div className="mt-2 space-y-3 rounded-2xl border border-white/60 bg-card/60 p-4 text-sm backdrop-blur animate-float-in">
           {info && (
             <div className="rounded-xl bg-rose/20 p-3">
               <div className="flex items-start gap-2">
@@ -448,7 +450,7 @@ function SignInDebugPanel(props: {
           {lastError?.raw && (
             <details className="text-xs text-muted-foreground">
               <summary className="cursor-pointer">Technical details</summary>
-              <pre className="mt-1.5 overflow-x-auto rounded-lg bg-white/70 p-2 text-[11px]">{lastError.raw}</pre>
+              <pre className="mt-1.5 overflow-x-auto rounded-lg bg-card/70 p-2 text-[11px]">{lastError.raw}</pre>
             </details>
           )}
         </div>
