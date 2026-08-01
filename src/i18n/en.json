@@ -187,6 +187,18 @@
     "delete": "Delete",
     "close": "Close",
     "loading": "Loading…",
-    "back": "Back"
+    "back": "Back",
+    "tryAgain": "Try again.",
+    "create": "Create"
+  },
+  "collections": {
+    "created": "Collection created",
+    "createFailed": "Could not create collection",
+    "new": "New collection",
+    "name": "Name",
+    "namePh": "e.g. Recipes, Leadership, University",
+    "descOptional": "Description (optional)",
+    "descPh": "A quiet corner of your library",
+    "creating": "Creating…"
   }
 }

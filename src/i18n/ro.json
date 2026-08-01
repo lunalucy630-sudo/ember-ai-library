@@ -188,6 +188,18 @@
     "delete": "Șterge",
     "close": "Închide",
     "loading": "Se încarcă…",
-    "back": "Înapoi"
+    "back": "Înapoi",
+    "tryAgain": "Încearcă din nou.",
+    "create": "Creează"
+  },
+  "collections": {
+    "created": "Colecție creată",
+    "createFailed": "Nu am putut crea colecția",
+    "new": "Colecție nouă",
+    "name": "Nume",
+    "namePh": "ex. Rețete, Leadership, Facultate",
+    "descOptional": "Descriere (opțional)",
+    "descPh": "Un colț liniștit din biblioteca ta",
+    "creating": "Se creează…"
   }
 }
