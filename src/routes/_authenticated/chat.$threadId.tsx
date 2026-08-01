@@ -13,6 +13,7 @@ export const Route = createFileRoute("/_authenticated/chat/$threadId")({
 });
 
 function ThreadPage() {
+  const { t } = useTranslation();
   const { threadId } = Route.useParams();
   const qc = useQueryClient();
   const [input, setInput] = useState("");
@@ -59,7 +60,7 @@ function ThreadPage() {
               <div className="mx-auto mb-3 grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-coral to-rose text-primary-foreground">
                 <Sparkles className="h-5 w-5" />
               </div>
-              <h3 className="font-display text-xl">Ask about anything you've saved</h3>
+              <h3 className="font-display text-xl">{t("chat.welcome")}</h3>
               <p className="mt-2 text-sm text-muted-foreground">
                 {t("chat.welcomeSub")}
               </p>
