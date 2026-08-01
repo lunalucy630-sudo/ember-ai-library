@@ -33,7 +33,7 @@ function MobileTopBar() {
         <div className="grid h-8 w-8 place-items-center rounded-xl bg-gradient-to-br from-coral to-rose text-primary-foreground">
           <Sparkles className="h-4 w-4" />
         </div>
-        <span className="font-display text-lg font-semibold">Lumen</span>
+        <span className="font-display text-lg font-semibold">Ember</span>
       </Link>
       <Sheet>
         <SheetTrigger asChild>
@@ -65,7 +65,7 @@ function SidebarContent() {
     { to: "/library", label: "Library", icon: Home },
     { to: "/upload", label: "Add to library", icon: Upload },
     { to: "/search", label: "Search", icon: Search },
-    { to: "/chat", label: "Ask Lumen", icon: MessagesSquare },
+    { to: "/chat", label: "Ask Ember", icon: MessagesSquare },
   ];
 
   const signOut = async () => {
@@ -81,7 +81,7 @@ function SidebarContent() {
           <Sparkles className="h-5 w-5" />
         </div>
         <div>
-          <div className="font-display text-lg font-semibold leading-none">Lumen</div>
+          <div className="font-display text-lg font-semibold leading-none">Ember</div>
           <div className="text-[11px] text-muted-foreground">Your AI library</div>
         </div>
       </Link>

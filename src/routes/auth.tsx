@@ -96,7 +96,7 @@ function AuthPage() {
   const handleGoogle = async () => {
     setBusy(true);
     try {
-      sessionStorage.setItem("lumen:next", nextPath);
+      sessionStorage.setItem("ember:next", nextPath);
     } catch {
       /* ignore */
     }
@@ -156,7 +156,7 @@ function AuthPage() {
           },
         });
         if (error) throw error;
-        toast.success("Welcome to Lumen", { description: "Check your inbox to confirm your email." });
+        toast.success("Welcome to Ember", { description: "Check your inbox to confirm your email." });
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
@@ -186,7 +186,7 @@ function AuthPage() {
               <Sparkles className="h-5 w-5" />
             </div>
             <div>
-              <div className="font-display text-lg font-semibold leading-none">Lumen</div>
+              <div className="font-display text-lg font-semibold leading-none">Ember</div>
               <div className="text-xs text-muted-foreground">Your AI video library</div>
             </div>
           </div>
@@ -306,7 +306,7 @@ function AuthPage() {
           </form>
 
           <p className="mt-5 text-center text-sm text-muted-foreground">
-            {mode === "signup" ? "Already have an account? " : "New to Lumen? "}
+            {mode === "signup" ? "Already have an account? " : "New to Ember? "}
             <button
               onClick={() => setMode(mode === "signup" ? "signin" : "signup")}
               className="font-medium text-foreground underline-offset-2 hover:underline"

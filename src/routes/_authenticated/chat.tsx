@@ -47,7 +47,7 @@ function ChatLayout() {
         </Button>
         <div className="mt-4 space-y-1 overflow-y-auto">
           {threads.length === 0 && (
-            <p className="px-2 py-3 text-xs text-muted-foreground">Ask Lumen anything about your library.</p>
+            <p className="px-2 py-3 text-xs text-muted-foreground">Ask Ember anything about your library.</p>
           )}
           {threads.map((t) => (
             <div
@@ -83,7 +83,7 @@ function ChatLayout() {
               <div className="mx-auto mb-4 grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br from-coral to-rose text-primary-foreground shadow-[var(--shadow-glow)]">
                 <MessagesSquare className="h-6 w-6" />
               </div>
-              <h2 className="font-display text-2xl font-semibold">Ask Lumen</h2>
+              <h2 className="font-display text-2xl font-semibold">Ask Ember</h2>
               <p className="mt-2 text-sm text-muted-foreground">
                 Chat with your library. “Find every video about leadership.” “Summarize the psychology lectures.” “What did I save about active listening?”
               </p>

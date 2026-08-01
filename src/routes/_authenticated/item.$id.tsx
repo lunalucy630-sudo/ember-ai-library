@@ -160,7 +160,7 @@ function ItemDetail() {
           {processing && (
             <div className="mt-6 flex items-center gap-2 rounded-2xl bg-white/70 p-4 text-sm text-foreground/80">
               <Loader2 className="h-4 w-4 animate-spin text-coral" />
-              Lumen is understanding this item — transcript, summary, and tags coming up.
+              Ember is understanding this item — transcript, summary, and tags coming up.
             </div>
           )}
 

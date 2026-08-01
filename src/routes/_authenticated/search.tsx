@@ -24,7 +24,7 @@ function SearchPage() {
       <header className="mb-8">
         <h1 className="font-display text-4xl font-semibold tracking-tight">Search</h1>
         <p className="mt-2 text-muted-foreground">
-          Ask in plain language. Lumen looks across titles, transcripts, tags, and notes.
+          Ask in plain language. Ember looks across titles, transcripts, tags, and notes.
         </p>
       </header>
 
@@ -59,7 +59,7 @@ function SearchPage() {
           </div>
         ) : results.length === 0 ? (
           <div className="glass rounded-3xl p-8 text-center text-sm text-muted-foreground">
-            Nothing matched. Try different words, or ask Lumen in chat.
+            Nothing matched. Try different words, or ask Ember in chat.
           </div>
         ) : (
           <div className="space-y-3">

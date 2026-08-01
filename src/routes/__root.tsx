@@ -78,24 +78,24 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lumen — Your AI Video Library" },
+      { title: "Ember — Your AI Video Library" },
       {
         name: "description",
         content:
-          "Lumen is a premium AI-powered digital library for videos, lectures, PDFs, and notes. Save it, and let AI watch, read, and remember it for you.",
+          "Ember is a premium AI-powered digital library for videos, lectures, PDFs, and notes. Save it, and let AI watch, read, and remember it for you.",
       },
-      { name: "author", content: "Lumen" },
-      { property: "og:title", content: "Lumen — Your AI Video Library" },
+      { name: "author", content: "Ember" },
+      { property: "og:title", content: "Ember — Your AI Video Library" },
       {
         property: "og:description",
         content:
-          "Lumen is a premium AI-powered digital library for videos, lectures, PDFs, and notes. Save it, and let AI watch, read, and remember it for you.",
+          "Ember is a premium AI-powered digital library for videos, lectures, PDFs, and notes. Save it, and let AI watch, read, and remember it for you.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "theme-color", content: "#F8F4F4" },
-      { name: "twitter:title", content: "Lumen — Your AI Video Library" },
-      { name: "twitter:description", content: "Lumen is a premium AI-powered digital library for videos, lectures, PDFs, and notes. Save it, and let AI watch, read, and remember it for you." },
+      { name: "twitter:title", content: "Ember — Your AI Video Library" },
+      { name: "twitter:description", content: "Ember is a premium AI-powered digital library for videos, lectures, PDFs, and notes. Save it, and let AI watch, read, and remember it for you." },
       { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/1c4b1219-2b4a-446e-86b6-02f34071a102/id-preview-1fe8e452--b9c09da0-5f09-4b46-98cd-f2c704c73eb1.lovable.app-1784624559674.png" },
       { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/1c4b1219-2b4a-446e-86b6-02f34071a102/id-preview-1fe8e452--b9c09da0-5f09-4b46-98cd-f2c704c73eb1.lovable.app-1784624559674.png" },
     ],

@@ -18,9 +18,9 @@ function Landing() {
       if (data.user) {
         let next = "/library";
         try {
-          const stored = sessionStorage.getItem("lumen:next");
+          const stored = sessionStorage.getItem("ember:next");
           if (stored && stored.startsWith("/") && !stored.startsWith("//")) next = stored;
-          sessionStorage.removeItem("lumen:next");
+          sessionStorage.removeItem("ember:next");
         } catch {
           /* ignore */
         }
@@ -47,7 +47,7 @@ function Landing() {
           <div className="grid h-9 w-9 place-items-center rounded-2xl bg-gradient-to-br from-coral to-rose text-primary-foreground shadow-[var(--shadow-glow)]">
             <Sparkles className="h-5 w-5" />
           </div>
-          <span className="font-display text-xl font-semibold tracking-tight">Lumen</span>
+          <span className="font-display text-xl font-semibold tracking-tight">Ember</span>
         </div>
         <div className="flex items-center gap-2">
           <Link to="/auth">
@@ -70,7 +70,7 @@ function Landing() {
           <span className="text-gradient">understood</span>.
         </h1>
         <p className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground">
-          Lumen is your personal digital library. Save videos, lectures, recipes, PDFs, and notes —
+          Ember is your personal digital library. Save videos, lectures, recipes, PDFs, and notes —
           and let AI watch, read, and remember everything for you.
         </p>
         <div className="mt-10 flex flex-wrap items-center justify-center gap-3">

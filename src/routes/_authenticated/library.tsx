@@ -102,7 +102,7 @@ function ItemCard({ item }: { item: LibraryItem }) {
 
       <p className="mt-2 line-clamp-3 min-h-[3.5rem] text-sm text-muted-foreground">
         {item.summary_short ??
-          (processing ? "Lumen is understanding this…" : item.status === "failed" ? item.error_message ?? "Analysis failed." : "Not analyzed yet.")}
+          (processing ? "Ember is understanding this…" : item.status === "failed" ? item.error_message ?? "Analysis failed." : "Not analyzed yet.")}
       </p>
 
       {item.tags && item.tags.length > 0 && (
@@ -143,7 +143,7 @@ function EmptyState() {
       </div>
       <h2 className="font-display text-2xl font-semibold">Your library is waiting</h2>
       <p className="mt-2 text-sm text-muted-foreground">
-        Upload a video, paste a YouTube link, or drop in a PDF. Lumen will read, watch, and remember everything.
+        Upload a video, paste a YouTube link, or drop in a PDF. Ember will read, watch, and remember everything.
       </p>
       <Link to="/upload">
         <Button className="mt-6 rounded-full bg-gradient-to-r from-coral to-rose px-6 py-5 text-primary-foreground shadow-[var(--shadow-soft)]">

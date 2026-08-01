@@ -26,7 +26,7 @@ function UploadPage() {
       <header className="mb-8">
         <h1 className="font-display text-4xl font-semibold tracking-tight">Add to your library</h1>
         <p className="mt-2 text-muted-foreground">
-          Upload a file, paste a link, or capture a quick note. Lumen will do the rest.
+          Upload a file, paste a link, or capture a quick note. Ember will do the rest.
         </p>
       </header>
 
@@ -103,7 +103,7 @@ function UploadForm() {
         .catch((e) => toast.error("Analysis failed", { description: e instanceof Error ? e.message : "" }));
 
       setProgress(100);
-      toast.success("Added to your library", { description: "Lumen is understanding it now." });
+      toast.success("Added to your library", { description: "Ember is understanding it now." });
       navigate({ to: "/item/$id", params: { id: item.id } });
     } catch (e) {
       toast.error("Upload failed", { description: e instanceof Error ? e.message : "" });
@@ -188,7 +188,7 @@ function LinkForm() {
     },
     onSuccess: (item) => {
       qc.invalidateQueries({ queryKey: ["items"] });
-      toast.success("Saved", { description: "Lumen is analyzing the link." });
+      toast.success("Saved", { description: "Ember is analyzing the link." });
       navigate({ to: "/item/$id", params: { id: item.id } });
     },
     onError: (e) => toast.error("Could not save", { description: e instanceof Error ? e.message : "" }),
@@ -273,7 +273,7 @@ function NoteForm() {
             id="ncontent"
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            placeholder="Type freely — Lumen will summarize and tag it."
+            placeholder="Type freely — Ember will summarize and tag it."
             className="min-h-[180px] rounded-2xl bg-white/80"
           />
         </div>

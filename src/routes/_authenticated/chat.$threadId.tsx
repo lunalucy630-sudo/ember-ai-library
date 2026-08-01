@@ -60,7 +60,7 @@ function ThreadPage() {
               </div>
               <h3 className="font-display text-xl">Ask about anything you've saved</h3>
               <p className="mt-2 text-sm text-muted-foreground">
-                Lumen only uses your library. It'll cite the items it references.
+                Ember only uses your library. It'll cite the items it references.
               </p>
             </div>
           </div>
@@ -124,7 +124,7 @@ function ThreadPage() {
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); }
             }}
-            placeholder="Ask Lumen about your library…"
+            placeholder="Ask Ember about your library…"
             className="min-h-[46px] max-h-40 resize-none border-none bg-transparent shadow-none focus-visible:ring-0"
           />
           <Button
