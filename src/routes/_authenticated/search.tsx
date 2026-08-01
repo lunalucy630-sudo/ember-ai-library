@@ -24,7 +24,7 @@ function SearchPage() {
   return (
     <div className="mx-auto max-w-4xl">
       <header className="mb-8">
-        <h1 className="font-display text-4xl font-semibold tracking-tight">Search</h1>
+        <h1 className="font-display text-4xl font-semibold tracking-tight">{t("search.title")}</h1>
         <p className="mt-2 text-muted-foreground">
           {t("search.sub")}
         </p>
@@ -41,7 +41,7 @@ function SearchPage() {
         <Input
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="e.g. the pasta recipe video, notes on empathy…"
+          placeholder={t("search.placeholder")}
           className="h-11 flex-1 border-none bg-transparent shadow-none focus-visible:ring-0"
         />
         <Button
@@ -57,7 +57,7 @@ function SearchPage() {
         {results === null ? (
           <div className="glass rounded-3xl p-8 text-center text-sm text-muted-foreground">
             <Sparkles className="mx-auto mb-2 h-5 w-5 text-coral" />
-            Try “videos about leadership”, “recipe with chicken”, or “lecture about child development”.
+            {t("search.hint")}
           </div>
         ) : results.length === 0 ? (
           <div className="glass rounded-3xl p-8 text-center text-sm text-muted-foreground">
