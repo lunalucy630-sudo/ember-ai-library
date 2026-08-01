@@ -2,13 +2,15 @@ import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { listCollections } from "@/lib/library.functions";
-import { Home, Upload, Search, MessagesSquare, Sparkles, LogOut, BookOpen, Plus } from "lucide-react";
+import { Home, Upload, Search, MessagesSquare, Flame, LogOut, BookOpen, Plus } from "lucide-react";
 import type { ReactNode } from "react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
 import { CreateCollectionDialog } from "./CreateCollectionDialog";
+import { LangThemeSwitcher } from "./LangThemeSwitcher";
+import { useTranslation } from "react-i18next";
 
 export function AppShell({ children }: { children: ReactNode }) {
   return (
@@ -27,13 +29,14 @@ export function AppShell({ children }: { children: ReactNode }) {
 }
 
 function MobileTopBar() {
+  const { t } = useTranslation();
   return (
     <div className="sticky top-0 z-30 flex items-center justify-between border-b border-white/50 bg-background/70 px-4 py-3 backdrop-blur-xl md:hidden">
       <Link to="/library" className="flex items-center gap-2">
         <div className="grid h-8 w-8 place-items-center rounded-xl bg-gradient-to-br from-coral to-rose text-primary-foreground">
-          <Sparkles className="h-4 w-4" />
+          <Flame className="h-4 w-4" />
         </div>
-        <span className="font-display text-lg font-semibold">Ember</span>
+        <span className="font-display text-lg font-semibold">{t("brand.name")}</span>
       </Link>
       <Sheet>
         <SheetTrigger asChild>
@@ -50,6 +53,7 @@ function MobileTopBar() {
 }
 
 function SidebarContent() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const qc = useQueryClient();
   const state = useRouterState();
@@ -62,10 +66,10 @@ function SidebarContent() {
   });
 
   const nav = [
-    { to: "/library", label: "Library", icon: Home },
-    { to: "/upload", label: "Add to library", icon: Upload },
-    { to: "/search", label: "Search", icon: Search },
-    { to: "/chat", label: "Ask Ember", icon: MessagesSquare },
+    { to: "/library", label: t("nav.library"), icon: Home },
+    { to: "/upload", label: t("nav.add"), icon: Upload },
+    { to: "/search", label: t("nav.search"), icon: Search },
+    { to: "/chat", label: t("nav.chat"), icon: MessagesSquare },
   ];
 
   const signOut = async () => {
@@ -78,11 +82,11 @@ function SidebarContent() {
     <div className="flex h-full flex-col">
       <Link to="/library" className="mb-8 flex items-center gap-2">
         <div className="grid h-9 w-9 place-items-center rounded-2xl bg-gradient-to-br from-coral to-rose text-primary-foreground shadow-[var(--shadow-glow)]">
-          <Sparkles className="h-5 w-5" />
+          <Flame className="h-5 w-5" />
         </div>
         <div>
-          <div className="font-display text-lg font-semibold leading-none">Ember</div>
-          <div className="text-[11px] text-muted-foreground">Your AI library</div>
+          <div className="font-display text-lg font-semibold leading-none">{t("brand.name")}</div>
+          <div className="text-[11px] text-muted-foreground">{t("brand.tagline")}</div>
         </div>
       </Link>
 
@@ -109,12 +113,12 @@ function SidebarContent() {
       <div className="mt-8">
         <div className="mb-2 flex items-center justify-between px-2">
           <div className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
-            Collections
+            {t("nav.collections")}
           </div>
           <button
             onClick={() => setOpenCreateCollection(true)}
             className="rounded-full p-1 text-muted-foreground hover:bg-white/70 hover:text-foreground"
-            aria-label="New collection"
+            aria-label={t("nav.newCollection")}
           >
             <Plus className="h-3.5 w-3.5" />
           </button>
@@ -139,12 +143,13 @@ function SidebarContent() {
         </div>
       </div>
 
-      <div className="mt-auto pt-6">
+      <div className="mt-auto space-y-2 pt-6">
+        <LangThemeSwitcher />
         <button
           onClick={signOut}
           className="flex w-full items-center gap-2 rounded-2xl px-3 py-2.5 text-sm text-foreground/70 hover:bg-white/60"
         >
-          <LogOut className="h-4 w-4" /> Sign out
+          <LogOut className="h-4 w-4" /> {t("nav.signOut")}
         </button>
       </div>
 
