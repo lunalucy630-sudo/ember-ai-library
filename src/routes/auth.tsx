@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Sparkles, ArrowLeft, ExternalLink, Info, ChevronDown, ChevronUp, CheckCircle2, XCircle, AlertCircle } from "lucide-react";
+import { Flame, ArrowLeft, ExternalLink, Info, ChevronDown, ChevronUp, CheckCircle2, XCircle, AlertCircle } from "lucide-react";
 import { z } from "zod";
 
 const searchSchema = z.object({
@@ -185,10 +185,10 @@ function AuthPage() {
         <div className="glass rounded-3xl p-8 animate-float-in">
           <div className="mb-6 flex items-center gap-2">
             <div className="grid h-10 w-10 place-items-center rounded-2xl bg-gradient-to-br from-coral to-rose text-primary-foreground shadow-[var(--shadow-glow)]">
-              <Sparkles className="h-5 w-5" />
+              <Flame className="h-5 w-5" />
             </div>
             <div>
-              <div className="font-display text-lg font-semibold leading-none">Ember</div>
+              <div className="font-display text-lg font-semibold leading-none">{t("brand.name")}</div>
               <div className="text-xs text-muted-foreground">Your AI video library</div>
             </div>
           </div>
