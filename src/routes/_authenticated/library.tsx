@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { listItems, type LibraryItem } from "@/lib/library.functions";
@@ -47,7 +48,7 @@ function LibraryPage() {
           </h1>
           <p className="mt-2 text-muted-foreground">
             {items.length === 0
-              ? "Your quiet corner of the internet. Add something to begin."
+              ? t("library.emptyLead")
               : `${items.length} ${items.length === 1 ? "item" : "items"} — remembered and understood.`}
           </p>
         </div>
@@ -102,7 +103,7 @@ function ItemCard({ item }: { item: LibraryItem }) {
 
       <p className="mt-2 line-clamp-3 min-h-[3.5rem] text-sm text-muted-foreground">
         {item.summary_short ??
-          (processing ? "Ember is understanding this…" : item.status === "failed" ? item.error_message ?? "Analysis failed." : "Not analyzed yet.")}
+          (processing ? t("library.processing") : item.status === "failed" ? item.error_message ?? t("library.failed") : t("library.notAnalyzed"))}
       </p>
 
       {item.tags && item.tags.length > 0 && (

@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
@@ -24,7 +25,7 @@ function SearchPage() {
       <header className="mb-8">
         <h1 className="font-display text-4xl font-semibold tracking-tight">Search</h1>
         <p className="mt-2 text-muted-foreground">
-          Ask in plain language. Ember looks across titles, transcripts, tags, and notes.
+          {t("search.sub")}
         </p>
       </header>
 
@@ -47,7 +48,7 @@ function SearchPage() {
           disabled={!q.trim() || mut.isPending}
           className="rounded-full bg-gradient-to-r from-coral to-rose px-5 text-primary-foreground shadow-[var(--shadow-soft)]"
         >
-          {mut.isPending ? "Looking…" : "Search"}
+          {mut.isPending ? t("search.searching") : t("search.search")}
         </Button>
       </form>
 
@@ -59,7 +60,7 @@ function SearchPage() {
           </div>
         ) : results.length === 0 ? (
           <div className="glass rounded-3xl p-8 text-center text-sm text-muted-foreground">
-            Nothing matched. Try different words, or ask Ember in chat.
+            {t("search.noMatch")}
           </div>
         ) : (
           <div className="space-y-3">
