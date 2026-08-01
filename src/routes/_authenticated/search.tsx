@@ -12,6 +12,7 @@ export const Route = createFileRoute("/_authenticated/search")({
 });
 
 function SearchPage() {
+  const { t } = useTranslation();
   const [q, setQ] = useState("");
   const [results, setResults] = useState<LibraryItem[] | null>(null);
 
