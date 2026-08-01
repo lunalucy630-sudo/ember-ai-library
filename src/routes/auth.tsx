@@ -180,7 +180,7 @@ function AuthPage() {
 
       <div className="relative z-10 mx-auto flex min-h-screen max-w-md flex-col justify-center px-6 py-12">
         <Link to="/" className="mb-6 inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
-          <ArrowLeft className="h-4 w-4" /> Back
+          <ArrowLeft className="h-4 w-4" /> {t("common.back")}
         </Link>
         <div className="glass rounded-3xl p-8 animate-float-in">
           <div className="mb-6 flex items-center gap-2">
@@ -189,7 +189,7 @@ function AuthPage() {
             </div>
             <div>
               <div className="font-display text-lg font-semibold leading-none">{t("brand.name")}</div>
-              <div className="text-xs text-muted-foreground">Your AI video library</div>
+              <div className="text-xs text-muted-foreground">{t("brand.tagline")}</div>
             </div>
           </div>
 
@@ -257,7 +257,7 @@ function AuthPage() {
 
 
           <div className="my-5 flex items-center gap-3 text-xs text-muted-foreground">
-            <div className="h-px flex-1 bg-border" /> or <div className="h-px flex-1 bg-border" />
+            <div className="h-px flex-1 bg-border" /> {t("auth.or")} <div className="h-px flex-1 bg-border" />
           </div>
 
           <form onSubmit={handleEmail} className="space-y-3">
