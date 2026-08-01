@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getThread, sendChatMessage } from "@/lib/chat.functions";
@@ -60,7 +61,7 @@ function ThreadPage() {
               </div>
               <h3 className="font-display text-xl">Ask about anything you've saved</h3>
               <p className="mt-2 text-sm text-muted-foreground">
-                Ember only uses your library. It'll cite the items it references.
+                {t("chat.welcomeSub")}
               </p>
             </div>
           </div>
@@ -124,7 +125,7 @@ function ThreadPage() {
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); }
             }}
-            placeholder="Ask Ember about your library…"
+            placeholder={t("chat.placeholder")}
             className="min-h-[46px] max-h-40 resize-none border-none bg-transparent shadow-none focus-visible:ring-0"
           />
           <Button

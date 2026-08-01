@@ -10,6 +10,7 @@ export const Route = createFileRoute("/_authenticated/chat")({
 });
 
 function ChatLayout() {
+  const { t } = useTranslation();
   const state = useRouterState();
   const activeId = state.matches.find((m) => m.params && "threadId" in m.params)?.params.threadId as string | undefined;
   const navigate = useNavigate();
