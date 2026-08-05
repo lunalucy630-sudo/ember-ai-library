@@ -201,5 +201,33 @@
     "descOptional": "Descriere (opțional)",
     "descPh": "Un colț liniștit din biblioteca ta",
     "creating": "Se creează…"
+  },
+  "collectionChat": {
+    "title": "Asistentul colecției",
+    "scopeHint": "Răspunde folosind doar această colecție",
+    "newChat": "Conversație nouă",
+    "empty": "Întreabă orice despre materialele de pe acest raft — Ember le citește pe toate deodată.",
+    "placeholder": "Întreabă despre această colecție…",
+    "thinking": "Ember răsfoiește raftul…",
+    "source": "sursă",
+    "aiManaged": "Gestionată de AI",
+    "aiManagedSaved": "Setările colecției au fost salvate",
+    "s1": "Rezumă tot ce se află în această colecție.",
+    "s2": "Ce materiale se contrazic între ele?",
+    "s3": "Ce concepte apar cel mai des?",
+    "s4": "Creează notițe de studiu din tot ce e aici."
+  },
+  "organize": {
+    "button": "Organizare automată",
+    "reviewTitle": "Organizare propusă",
+    "reviewSub": "Nimic nu se schimbă până nu aprobi. Debifează ce vrei să rămână neatins.",
+    "nothingToDo": "Totul e deja pus la punct — nu e nimic nou de organizat.",
+    "createLabel": "Creează colecția „{{name}}”",
+    "addLabel": "Adaugă „{{item}}” în {{collection}}",
+    "mergeLabel": "Unește {{from}} cu {{into}}",
+    "applySelected": "Aplică {{count}} modificări",
+    "dismiss": "Renunță",
+    "fullReindex": "Reindexează tot",
+    "applied": "S-au aplicat {{count}} modificări"
   }
 }

@@ -200,5 +200,33 @@
     "descOptional": "Description (optional)",
     "descPh": "A quiet corner of your library",
     "creating": "Creating…"
+  },
+  "collectionChat": {
+    "title": "Collection assistant",
+    "scopeHint": "Answers using only this collection",
+    "newChat": "New chat",
+    "empty": "Ask anything about the materials on this shelf — Ember reads across all of them.",
+    "placeholder": "Ask about this collection…",
+    "thinking": "Ember is reading through this shelf…",
+    "source": "source",
+    "aiManaged": "AI managed",
+    "aiManagedSaved": "Collection settings saved",
+    "s1": "Summarize everything in this collection.",
+    "s2": "Which items contradict each other?",
+    "s3": "What concepts appear most often?",
+    "s4": "Create study notes from everything here."
+  },
+  "organize": {
+    "button": "Auto organize",
+    "reviewTitle": "Proposed organization",
+    "reviewSub": "Nothing changes until you approve it. Uncheck anything you'd rather keep as is.",
+    "nothingToDo": "Everything is already tidy — nothing new to organize.",
+    "createLabel": "Create collection \"{{name}}\"",
+    "addLabel": "Add \"{{item}}\" to {{collection}}",
+    "mergeLabel": "Merge {{from}} into {{into}}",
+    "applySelected": "Apply {{count}} changes",
+    "dismiss": "Dismiss",
+    "fullReindex": "Force full re-index",
+    "applied": "Applied {{count}} changes"
   }
 }
