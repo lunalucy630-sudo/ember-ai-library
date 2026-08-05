@@ -282,6 +282,15 @@ function ItemDetail() {
             targets={relatedTargets}
           />
 
+          <section className="mt-8">
+            <ScopedChatPanel
+              itemId={item.id}
+              titleById={{ [item.id]: item.title }}
+              className="h-[60vh]"
+            />
+          </section>
+
+
           {item.raw_content && item.kind === "note" && (
             <section className="mt-8">
               <SectionHeader title="Your note" />
