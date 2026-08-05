@@ -15,6 +15,7 @@ import {
   Loader2,
   AlertCircle,
 } from "lucide-react";
+import { AutoOrganizeButton } from "@/components/library/AutoOrganizeButton";
 
 export const Route = createFileRoute("/_authenticated/library")({
   component: LibraryPage,
