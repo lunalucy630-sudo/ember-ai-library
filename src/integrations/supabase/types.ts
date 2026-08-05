@@ -54,6 +54,7 @@ export type Database = {
       }
       chat_threads: {
         Row: {
+          collection_id: string | null
           created_at: string
           id: string
           title: string
@@ -61,6 +62,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          collection_id?: string | null
           created_at?: string
           id?: string
           title?: string
@@ -68,43 +70,105 @@ export type Database = {
           user_id: string
         }
         Update: {
+          collection_id?: string | null
           created_at?: string
           id?: string
           title?: string
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "chat_threads_collection_id_fkey"
+            columns: ["collection_id"]
+            isOneToOne: false
+            referencedRelation: "collections"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       collections: {
         Row: {
+          ai_managed: boolean
           color: string | null
+          cover_gradient: string | null
           created_at: string
           description: string | null
           icon: string | null
           id: string
           name: string
+          updated_at: string
           user_id: string
         }
         Insert: {
+          ai_managed?: boolean
           color?: string | null
+          cover_gradient?: string | null
           created_at?: string
           description?: string | null
           icon?: string | null
           id?: string
           name: string
+          updated_at?: string
           user_id: string
         }
         Update: {
+          ai_managed?: boolean
           color?: string | null
+          cover_gradient?: string | null
           created_at?: string
           description?: string | null
           icon?: string | null
           id?: string
           name?: string
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
+      }
+      item_chunks: {
+        Row: {
+          chunk_index: number
+          content: string
+          created_at: string
+          embedding: string
+          id: string
+          item_id: string
+          section_label: string | null
+          timestamp_label: string | null
+          user_id: string
+        }
+        Insert: {
+          chunk_index: number
+          content: string
+          created_at?: string
+          embedding: string
+          id?: string
+          item_id: string
+          section_label?: string | null
+          timestamp_label?: string | null
+          user_id: string
+        }
+        Update: {
+          chunk_index?: number
+          content?: string
+          created_at?: string
+          embedding?: string
+          id?: string
+          item_id?: string
+          section_label?: string | null
+          timestamp_label?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "item_chunks_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "items"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       item_collections: {
         Row: {
@@ -144,9 +208,11 @@ export type Database = {
       }
       items: {
         Row: {
+          content_hash: string | null
           created_at: string
           description: string | null
           duration_seconds: number | null
+          embedded_at: string | null
           error_message: string | null
           file_size: number | null
           id: string
@@ -171,9 +237,11 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          content_hash?: string | null
           created_at?: string
           description?: string | null
           duration_seconds?: number | null
+          embedded_at?: string | null
           error_message?: string | null
           file_size?: number | null
           id?: string
@@ -198,9 +266,11 @@ export type Database = {
           user_id: string
         }
         Update: {
+          content_hash?: string | null
           created_at?: string
           description?: string | null
           duration_seconds?: number | null
+          embedded_at?: string | null
           error_message?: string | null
           file_size?: number | null
           id?: string
@@ -221,6 +291,36 @@ export type Database = {
           timestamps?: Json | null
           title?: string
           transcript?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      organize_runs: {
+        Row: {
+          created_at: string
+          id: string
+          items_processed: number
+          plan: Json
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          items_processed?: number
+          plan?: Json
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          items_processed?: number
+          plan?: Json
+          status?: string
           updated_at?: string
           user_id?: string
         }
@@ -306,7 +406,22 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      match_item_chunks: {
+        Args: {
+          filter_collection_id?: string
+          filter_item_id?: string
+          match_count?: number
+          query_embedding: string
+        }
+        Returns: {
+          content: string
+          id: string
+          item_id: string
+          section_label: string
+          similarity: number
+          timestamp_label: string
+        }[]
+      }
     }
     Enums: {
       analysis_status: "pending" | "processing" | "ready" | "failed"

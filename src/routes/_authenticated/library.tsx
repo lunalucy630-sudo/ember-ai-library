@@ -15,6 +15,7 @@ import {
   Loader2,
   AlertCircle,
 } from "lucide-react";
+import { AutoOrganizeButton } from "@/components/library/AutoOrganizeButton";
 
 export const Route = createFileRoute("/_authenticated/library")({
   component: LibraryPage,
@@ -53,11 +54,14 @@ function LibraryPage() {
               : t("library.count", { count: items.length })}
           </p>
         </div>
-        <Link to="/upload">
-          <Button className="rounded-full bg-gradient-to-r from-coral to-rose px-5 text-primary-foreground shadow-[var(--shadow-soft)]">
-            <Plus className="mr-1.5 h-4 w-4" /> {t("library.add")}
-          </Button>
-        </Link>
+        <div className="flex flex-wrap items-center gap-2">
+          <AutoOrganizeButton />
+          <Link to="/upload">
+            <Button className="rounded-full bg-gradient-to-r from-coral to-rose px-5 text-primary-foreground shadow-[var(--shadow-soft)]">
+              <Plus className="mr-1.5 h-4 w-4" /> {t("library.add")}
+            </Button>
+          </Link>
+        </div>
       </header>
 
       {isLoading ? (
