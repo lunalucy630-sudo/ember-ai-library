@@ -12,7 +12,9 @@ export const Route = createFileRoute("/_authenticated/chat")({
 function ChatLayout() {
   const { t } = useTranslation();
   const state = useRouterState();
-  const activeId = state.matches.find((m) => m.params && "threadId" in m.params)?.params.threadId as string | undefined;
+  const activeId = state.matches
+    .map((m) => (m.params as Record<string, string> | undefined)?.["threadId"])
+    .find((v): v is string => typeof v === "string");
   const navigate = useNavigate();
   const qc = useQueryClient();
 
