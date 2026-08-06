@@ -141,20 +141,40 @@ export function ScopedChatPanel({ collectionId, itemId, titleById = {}, suggesti
                 <div className="prose prose-sm max-w-none">
                   <ReactMarkdown>{m.content.replace(/\[cited:[^\]]*\]/gi, "").trim()}</ReactMarkdown>
                 </div>
-                {m.cited_item_ids?.length > 0 && (
-                  <div className="mt-2 flex flex-wrap gap-1.5 border-t border-border/50 pt-2">
-                    {m.cited_item_ids.map((id) => (
-                      <Link
-                        key={id}
-                        to="/item/$id"
-                        params={{ id }}
-                        className="rounded-full bg-card/70 px-2.5 py-0.5 text-[11px] text-foreground/80 hover:shadow-[var(--shadow-soft)]"
-                      >
-                        {titleById[id] ?? t("collectionChat.source")}
-                      </Link>
-                    ))}
-                  </div>
-                )}
+                {(() => {
+                  const cites = parseCitations(m.content, m.cited_item_ids ?? []);
+                  if (cites.length === 0) return null;
+                  return (
+                    <div className="mt-2 flex flex-wrap gap-1.5 border-t border-border/50 pt-2">
+                      {cites.map((c) => (
+                        <Link
+                          key={`${c.id}-${c.locator ?? ""}`}
+                          to="/item/$id"
+                          params={{ id: c.id }}
+                          search={
+                            c.seconds != null
+                              ? { t: c.seconds }
+                              : c.locator
+                                ? { s: c.locator }
+                                : {}
+                          }
+                          className="inline-flex items-center gap-1 rounded-full bg-card/70 px-2.5 py-0.5 text-[11px] text-foreground/80 hover:shadow-[var(--shadow-soft)]"
+                        >
+                          {c.seconds != null ? (
+                            <Play className="h-2.5 w-2.5" />
+                          ) : c.locator ? (
+                            <FileText className="h-2.5 w-2.5" />
+                          ) : null}
+                          <span>{titleById[c.id] ?? t("collectionChat.source")}</span>
+                          {c.locator && (
+                            <span className="font-mono text-[10px] text-muted-foreground">{c.locator}</span>
+                          )}
+                        </Link>
+                      ))}
+                    </div>
+                  );
+                })()}
+
               </div>
             </div>
           ))
