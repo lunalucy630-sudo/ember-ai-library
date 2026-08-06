@@ -40,7 +40,7 @@ import {
   X,
   Library,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Popover,
   PopoverContent,
