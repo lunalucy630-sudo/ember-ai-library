@@ -63,6 +63,38 @@ function ItemDetail() {
   const navigate = useNavigate();
   const qc = useQueryClient();
 
+  const mediaRef = useRef<HTMLVideoElement & HTMLAudioElement>(null);
+  const transcriptRef = useRef<HTMLDivElement>(null);
+  const [seek, setSeek] = useState<number | null>(startAt ?? null);
+
+  useEffect(() => {
+    if (startAt != null) setSeek(startAt);
+  }, [startAt]);
+
+  useEffect(() => {
+    if (seek == null) return;
+    const el = mediaRef.current;
+    if (el) {
+      try {
+        el.currentTime = seek;
+        void el.play()?.catch(() => {});
+      } catch {
+        /* media not ready yet */
+      }
+    }
+    el?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [seek]);
+
+  useEffect(() => {
+    if (!sectionQuery) return;
+    const timer = setTimeout(
+      () => transcriptRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }),
+      400,
+    );
+    return () => clearTimeout(timer);
+  }, [sectionQuery]);
+
+
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["item", id],
