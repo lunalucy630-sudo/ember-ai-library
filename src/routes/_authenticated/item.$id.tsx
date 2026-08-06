@@ -49,6 +49,14 @@ import {
 import { Input } from "@/components/ui/input";
 import ReactMarkdown from "react-markdown";
 
+/** "12:04" or "1:02:33" -> seconds. */
+function timeToSeconds(value: string): number | undefined {
+  const m = value.trim().match(/^(?:(\d{1,2}):)?(\d{1,2}):(\d{2})$/);
+  if (!m) return undefined;
+  return Number(m[1] ?? 0) * 3600 + Number(m[2]) * 60 + Number(m[3]);
+}
+
+
 export const Route = createFileRoute("/_authenticated/item/$id")({
   component: ItemDetail,
   validateSearch: (search: Record<string, unknown>): { t?: number; s?: string } => ({
