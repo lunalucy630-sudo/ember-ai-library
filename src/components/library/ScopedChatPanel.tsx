@@ -9,7 +9,40 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { createThread, getThread, listThreads, sendChatMessage } from "@/lib/chat.functions";
 
+interface Citation {
+  id: string;
+  locator?: string;
+  seconds?: number;
+}
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function toSeconds(locator: string): number | undefined {
+  const m = locator.trim().match(/^(?:(\d{1,2}):)?(\d{1,2}):(\d{2})$/);
+  if (!m) return undefined;
+  const [h, mm, ss] = [Number(m[1] ?? 0), Number(m[2]), Number(m[3])];
+  return h * 3600 + mm * 60 + ss;
+}
+
+/** Reads `[cited: <id>@<location>, ...]` markers, falling back to plain ids. */
+function parseCitations(content: string, fallbackIds: string[]): Citation[] {
+  const out = new Map<string, Citation>();
+  for (const match of content.matchAll(/\[cited:([^\]]+)\]/gi)) {
+    for (const raw of (match[1] ?? "").split(",")) {
+      const [idPart, ...rest] = raw.trim().split("@");
+      const id = (idPart ?? "").trim();
+      if (!UUID_RE.test(id)) continue;
+      const locator = rest.join("@").trim() || undefined;
+      const seconds = locator ? toSeconds(locator) : undefined;
+      out.set(`${id}-${locator ?? ""}`, { id, locator, seconds });
+    }
+  }
+  if (out.size === 0) for (const id of fallbackIds) out.set(id, { id });
+  return [...out.values()];
+}
+
 interface Props {
+
   collectionId?: string;
   itemId?: string;
   titleById?: Record<string, string>;
