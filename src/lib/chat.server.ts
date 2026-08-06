@@ -147,10 +147,11 @@ ${contextBlock || "(nothing available in this scope yet)"}`;
     new Set(
       [...assistant.matchAll(/\[cited:([^\]]+)\]/gi)]
         .flatMap((m) => (m[1] ?? "").split(","))
-        .map((s) => s.trim())
+        .map((s) => s.trim().split("@")[0]?.trim() ?? "")
         .filter((s) => /^[0-9a-f-]{36}$/i.test(s)),
     ),
   );
+
 
   await supabase.from("chat_messages").insert({
     thread_id: input.threadId,
