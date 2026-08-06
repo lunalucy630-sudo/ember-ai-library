@@ -146,20 +146,22 @@ function ItemDetail() {
           <div className="aspect-video w-full bg-black/80">
             {item.source === "youtube" && item.source_url ? (
               <iframe
-                src={youtubeEmbed(item.source_url)}
+                key={seek ?? "start"}
+                src={`${youtubeEmbed(item.source_url)}${youtubeEmbed(item.source_url).includes("?") ? "&" : "?"}start=${seek ?? 0}${seek ? "&autoplay=1" : ""}`}
                 className="h-full w-full"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                 allowFullScreen
                 title={item.title}
               />
             ) : playbackUrl ? (
-              <video src={playbackUrl} controls className="h-full w-full" />
+              <video ref={mediaRef} src={playbackUrl} controls className="h-full w-full" />
             ) : null}
           </div>
         )}
         {item.kind === "audio" && playbackUrl && (
-          <div className="p-6"><audio src={playbackUrl} controls className="w-full" /></div>
+          <div className="p-6"><audio ref={mediaRef} src={playbackUrl} controls className="w-full" /></div>
         )}
+
         {item.kind === "image" && playbackUrl && (
           <img src={playbackUrl} alt={item.title} className="max-h-[70vh] w-full object-contain" />
         )}
