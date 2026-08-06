@@ -61,7 +61,7 @@ function CollectionPage() {
         </label>
       </header>
 
-      <div className="grid gap-6 lg:grid-cols-[1.35fr_1fr]">
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1.35fr)_minmax(360px,1fr)] lg:items-start">
         <div>
           {data.items.length === 0 ? (
             <div className="glass rounded-3xl p-8 text-center text-sm text-muted-foreground">
@@ -89,18 +89,21 @@ function CollectionPage() {
           )}
         </div>
 
-        <ScopedChatPanel
-          collectionId={id}
-          titleById={titleById}
-          className="h-[70vh] lg:sticky lg:top-6"
-          suggestions={[
-            t("collectionChat.s1"),
-            t("collectionChat.s2"),
-            t("collectionChat.s3"),
-            t("collectionChat.s4"),
-          ]}
-        />
+        <aside className="lg:sticky lg:top-6 lg:h-[calc(100vh-3rem)]">
+          <ScopedChatPanel
+            collectionId={id}
+            titleById={titleById}
+            className="h-[70vh] lg:h-full"
+            suggestions={[
+              t("collectionChat.s1"),
+              t("collectionChat.s2"),
+              t("collectionChat.s3"),
+              t("collectionChat.s4"),
+            ]}
+          />
+        </aside>
       </div>
+
     </div>
   );
 }
