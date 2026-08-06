@@ -276,17 +276,23 @@ function ItemDetail() {
             <section className="mt-8">
               <SectionHeader title="Important moments" />
               <div className="mt-3 space-y-1.5">
-                {(item.timestamps as Array<{ time: string; label: string }>).map((t, i) => (
-                  <div key={i} className="flex items-center gap-3 rounded-xl bg-card/60 px-4 py-2 text-sm">
+                {(item.timestamps as Array<{ time: string; label: string }>).map((ts, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => setSeek(timeToSeconds(ts.time) ?? 0)}
+                    className="flex w-full items-center gap-3 rounded-xl bg-card/60 px-4 py-2 text-left text-sm transition hover:shadow-[var(--shadow-soft)]"
+                  >
                     <span className="rounded-md bg-gradient-to-r from-coral to-rose px-2 py-0.5 font-mono text-[11px] text-primary-foreground">
-                      {t.time}
+                      {ts.time}
                     </span>
-                    <span className="text-foreground/85">{t.label}</span>
-                  </div>
+                    <span className="text-foreground/85">{ts.label}</span>
+                  </button>
                 ))}
               </div>
             </section>
           )}
+
 
           {item.summary_long && (
             <section className="mt-8">
