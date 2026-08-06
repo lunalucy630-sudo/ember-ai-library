@@ -51,12 +51,18 @@ import ReactMarkdown from "react-markdown";
 
 export const Route = createFileRoute("/_authenticated/item/$id")({
   component: ItemDetail,
+  validateSearch: (search: Record<string, unknown>): { t?: number; s?: string } => ({
+    t: search.t != null && !Number.isNaN(Number(search.t)) ? Number(search.t) : undefined,
+    s: typeof search.s === "string" && search.s ? search.s : undefined,
+  }),
 });
 
 function ItemDetail() {
   const { id } = Route.useParams();
+  const { t: startAt, s: sectionQuery } = Route.useSearch();
   const navigate = useNavigate();
   const qc = useQueryClient();
+
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["item", id],
