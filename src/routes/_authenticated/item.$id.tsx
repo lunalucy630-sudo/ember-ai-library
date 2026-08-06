@@ -315,13 +315,35 @@ function ItemDetail() {
           )}
 
           {item.transcript && (
-            <section className="mt-8">
+            <section className="mt-8" ref={transcriptRef}>
               <SectionHeader title="Transcript" />
+              {sectionQuery && (
+                <p className="mt-2 text-xs text-muted-foreground">
+                  Jumped to “{sectionQuery}”
+                </p>
+              )}
               <div className="mt-3 max-h-96 overflow-y-auto rounded-2xl bg-card/70 p-4 text-sm leading-relaxed text-foreground/85">
-                {item.transcript.split("\n").map((line, i) => <p key={i} className="mb-2">{line}</p>)}
+                {item.transcript.split("\n").map((line, i) => {
+                  const hit =
+                    sectionQuery && line.toLowerCase().includes(sectionQuery.toLowerCase());
+                  return (
+                    <p
+                      key={i}
+                      ref={
+                        hit
+                          ? (el) => el?.scrollIntoView({ block: "center" })
+                          : undefined
+                      }
+                      className={`mb-2 ${hit ? "rounded-lg bg-gradient-to-r from-coral/30 to-rose/20 px-2 py-1" : ""}`}
+                    >
+                      {line}
+                    </p>
+                  );
+                })}
               </div>
             </section>
           )}
+
 
           <RelatedMaterials
             itemId={item.id}
