@@ -107,15 +107,20 @@ ${m.content.slice(0, 1500)}`;
     scopeLine = "ONLY this single item";
   }
 
-  const system = `You are Ember, a warm and precise AI librarian. Answer using ${scopeLine}, unless the user explicitly asks you to search the web.
+  const system = `You are Ember, a warm and precise AI librarian. You may ONLY use the SOURCE EXCERPTS below, which come from ${scopeLine}.
+STRICT GROUNDING RULES:
+- Never answer from general knowledge, training data, or the web. If the excerpts do not contain the answer, reply plainly that this ${input.collectionId ? "collection" : input.itemId ? "item" : "library"} doesn't cover it, and suggest what the user could save or ask instead. Do not guess or fill gaps.
+- Do not invent titles, timestamps, sections or facts that are not in the excerpts.
 Synthesize ACROSS the sources: compare, contrast, connect and cluster ideas instead of describing each file one by one.
-Always ground claims in the excerpts below. Reference sources inline by title, and include the video timestamp or document section when the excerpt has one.
-If the materials don't cover the question, say so gently and suggest what to save.
-End every answer with a citation line: [cited: <id>, <id>].
+Reference sources inline by title, and include the video timestamp or document section when the excerpt has one.
 Format with markdown: short paragraphs, headings and bullet lists.
+End every answer with a citation line listing each source you used with its exact location:
+[cited: <id>@<location>, <id>@<location>]
+where <location> is the video timestamp exactly as shown in the excerpt (e.g. 12:04) or the document/note section label. If an excerpt has no location, write just <id>. Never invent a location.
 
 SOURCE EXCERPTS:
 ${contextBlock || "(nothing available in this scope yet)"}`;
+
 
   const messages = [
     { role: "system", content: system },
@@ -142,10 +147,11 @@ ${contextBlock || "(nothing available in this scope yet)"}`;
     new Set(
       [...assistant.matchAll(/\[cited:([^\]]+)\]/gi)]
         .flatMap((m) => (m[1] ?? "").split(","))
-        .map((s) => s.trim())
+        .map((s) => s.trim().split("@")[0]?.trim() ?? "")
         .filter((s) => /^[0-9a-f-]{36}$/i.test(s)),
     ),
   );
+
 
   await supabase.from("chat_messages").insert({
     thread_id: input.threadId,

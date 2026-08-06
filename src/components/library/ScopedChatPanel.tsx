@@ -3,13 +3,46 @@ import { useTranslation } from "react-i18next";
 import { Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import ReactMarkdown from "react-markdown";
-import { Flame, Send, User, Loader2 } from "lucide-react";
+import { Flame, Send, User, Loader2, Play, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { createThread, getThread, listThreads, sendChatMessage } from "@/lib/chat.functions";
 
+interface Citation {
+  id: string;
+  locator?: string;
+  seconds?: number;
+}
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function toSeconds(locator: string): number | undefined {
+  const m = locator.trim().match(/^(?:(\d{1,2}):)?(\d{1,2}):(\d{2})$/);
+  if (!m) return undefined;
+  const [h, mm, ss] = [Number(m[1] ?? 0), Number(m[2]), Number(m[3])];
+  return h * 3600 + mm * 60 + ss;
+}
+
+/** Reads `[cited: <id>@<location>, ...]` markers, falling back to plain ids. */
+function parseCitations(content: string, fallbackIds: string[]): Citation[] {
+  const out = new Map<string, Citation>();
+  for (const match of content.matchAll(/\[cited:([^\]]+)\]/gi)) {
+    for (const raw of (match[1] ?? "").split(",")) {
+      const [idPart, ...rest] = raw.trim().split("@");
+      const id = (idPart ?? "").trim();
+      if (!UUID_RE.test(id)) continue;
+      const locator = rest.join("@").trim() || undefined;
+      const seconds = locator ? toSeconds(locator) : undefined;
+      out.set(`${id}-${locator ?? ""}`, { id, locator, seconds });
+    }
+  }
+  if (out.size === 0) for (const id of fallbackIds) out.set(id, { id });
+  return [...out.values()];
+}
+
 interface Props {
+
   collectionId?: string;
   itemId?: string;
   titleById?: Record<string, string>;
@@ -141,20 +174,40 @@ export function ScopedChatPanel({ collectionId, itemId, titleById = {}, suggesti
                 <div className="prose prose-sm max-w-none">
                   <ReactMarkdown>{m.content.replace(/\[cited:[^\]]*\]/gi, "").trim()}</ReactMarkdown>
                 </div>
-                {m.cited_item_ids?.length > 0 && (
-                  <div className="mt-2 flex flex-wrap gap-1.5 border-t border-border/50 pt-2">
-                    {m.cited_item_ids.map((id) => (
-                      <Link
-                        key={id}
-                        to="/item/$id"
-                        params={{ id }}
-                        className="rounded-full bg-card/70 px-2.5 py-0.5 text-[11px] text-foreground/80 hover:shadow-[var(--shadow-soft)]"
-                      >
-                        {titleById[id] ?? t("collectionChat.source")}
-                      </Link>
-                    ))}
-                  </div>
-                )}
+                {(() => {
+                  const cites = parseCitations(m.content, m.cited_item_ids ?? []);
+                  if (cites.length === 0) return null;
+                  return (
+                    <div className="mt-2 flex flex-wrap gap-1.5 border-t border-border/50 pt-2">
+                      {cites.map((c) => (
+                        <Link
+                          key={`${c.id}-${c.locator ?? ""}`}
+                          to="/item/$id"
+                          params={{ id: c.id }}
+                          search={
+                            c.seconds != null
+                              ? { t: c.seconds }
+                              : c.locator
+                                ? { s: c.locator }
+                                : {}
+                          }
+                          className="inline-flex items-center gap-1 rounded-full bg-card/70 px-2.5 py-0.5 text-[11px] text-foreground/80 hover:shadow-[var(--shadow-soft)]"
+                        >
+                          {c.seconds != null ? (
+                            <Play className="h-2.5 w-2.5" />
+                          ) : c.locator ? (
+                            <FileText className="h-2.5 w-2.5" />
+                          ) : null}
+                          <span>{titleById[c.id] ?? t("collectionChat.source")}</span>
+                          {c.locator && (
+                            <span className="font-mono text-[10px] text-muted-foreground">{c.locator}</span>
+                          )}
+                        </Link>
+                      ))}
+                    </div>
+                  );
+                })()}
+
               </div>
             </div>
           ))

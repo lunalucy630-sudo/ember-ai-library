@@ -40,7 +40,7 @@ import {
   X,
   Library,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Popover,
   PopoverContent,
@@ -49,14 +49,60 @@ import {
 import { Input } from "@/components/ui/input";
 import ReactMarkdown from "react-markdown";
 
+/** "12:04" or "1:02:33" -> seconds. */
+function timeToSeconds(value: string): number | undefined {
+  const m = value.trim().match(/^(?:(\d{1,2}):)?(\d{1,2}):(\d{2})$/);
+  if (!m) return undefined;
+  return Number(m[1] ?? 0) * 3600 + Number(m[2]) * 60 + Number(m[3]);
+}
+
+
 export const Route = createFileRoute("/_authenticated/item/$id")({
   component: ItemDetail,
+  validateSearch: (search: Record<string, unknown>): { t?: number; s?: string } => ({
+    t: search.t != null && !Number.isNaN(Number(search.t)) ? Number(search.t) : undefined,
+    s: typeof search.s === "string" && search.s ? search.s : undefined,
+  }),
 });
 
 function ItemDetail() {
   const { id } = Route.useParams();
+  const { t: startAt, s: sectionQuery } = Route.useSearch();
   const navigate = useNavigate();
   const qc = useQueryClient();
+
+  const mediaRef = useRef<HTMLVideoElement & HTMLAudioElement>(null);
+  const transcriptRef = useRef<HTMLDivElement>(null);
+  const [seek, setSeek] = useState<number | null>(startAt ?? null);
+
+  useEffect(() => {
+    if (startAt != null) setSeek(startAt);
+  }, [startAt]);
+
+  useEffect(() => {
+    if (seek == null) return;
+    const el = mediaRef.current;
+    if (el) {
+      try {
+        el.currentTime = seek;
+        void el.play()?.catch(() => {});
+      } catch {
+        /* media not ready yet */
+      }
+    }
+    el?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [seek]);
+
+  useEffect(() => {
+    if (!sectionQuery) return;
+    const timer = setTimeout(
+      () => transcriptRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }),
+      400,
+    );
+    return () => clearTimeout(timer);
+  }, [sectionQuery]);
+
+
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["item", id],
@@ -108,20 +154,22 @@ function ItemDetail() {
           <div className="aspect-video w-full bg-black/80">
             {item.source === "youtube" && item.source_url ? (
               <iframe
-                src={youtubeEmbed(item.source_url)}
+                key={seek ?? "start"}
+                src={`${youtubeEmbed(item.source_url)}${youtubeEmbed(item.source_url).includes("?") ? "&" : "?"}start=${seek ?? 0}${seek ? "&autoplay=1" : ""}`}
                 className="h-full w-full"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                 allowFullScreen
                 title={item.title}
               />
             ) : playbackUrl ? (
-              <video src={playbackUrl} controls className="h-full w-full" />
+              <video ref={mediaRef} src={playbackUrl} controls className="h-full w-full" />
             ) : null}
           </div>
         )}
         {item.kind === "audio" && playbackUrl && (
-          <div className="p-6"><audio src={playbackUrl} controls className="w-full" /></div>
+          <div className="p-6"><audio ref={mediaRef} src={playbackUrl} controls className="w-full" /></div>
         )}
+
         {item.kind === "image" && playbackUrl && (
           <img src={playbackUrl} alt={item.title} className="max-h-[70vh] w-full object-contain" />
         )}
@@ -236,17 +284,23 @@ function ItemDetail() {
             <section className="mt-8">
               <SectionHeader title="Important moments" />
               <div className="mt-3 space-y-1.5">
-                {(item.timestamps as Array<{ time: string; label: string }>).map((t, i) => (
-                  <div key={i} className="flex items-center gap-3 rounded-xl bg-card/60 px-4 py-2 text-sm">
+                {(item.timestamps as Array<{ time: string; label: string }>).map((ts, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => setSeek(timeToSeconds(ts.time) ?? 0)}
+                    className="flex w-full items-center gap-3 rounded-xl bg-card/60 px-4 py-2 text-left text-sm transition hover:shadow-[var(--shadow-soft)]"
+                  >
                     <span className="rounded-md bg-gradient-to-r from-coral to-rose px-2 py-0.5 font-mono text-[11px] text-primary-foreground">
-                      {t.time}
+                      {ts.time}
                     </span>
-                    <span className="text-foreground/85">{t.label}</span>
-                  </div>
+                    <span className="text-foreground/85">{ts.label}</span>
+                  </button>
                 ))}
               </div>
             </section>
           )}
+
 
           {item.summary_long && (
             <section className="mt-8">
@@ -269,13 +323,35 @@ function ItemDetail() {
           )}
 
           {item.transcript && (
-            <section className="mt-8">
+            <section className="mt-8" ref={transcriptRef}>
               <SectionHeader title="Transcript" />
+              {sectionQuery && (
+                <p className="mt-2 text-xs text-muted-foreground">
+                  Jumped to “{sectionQuery}”
+                </p>
+              )}
               <div className="mt-3 max-h-96 overflow-y-auto rounded-2xl bg-card/70 p-4 text-sm leading-relaxed text-foreground/85">
-                {item.transcript.split("\n").map((line, i) => <p key={i} className="mb-2">{line}</p>)}
+                {item.transcript.split("\n").map((line, i) => {
+                  const hit =
+                    sectionQuery && line.toLowerCase().includes(sectionQuery.toLowerCase());
+                  return (
+                    <p
+                      key={i}
+                      ref={
+                        hit
+                          ? (el) => el?.scrollIntoView({ block: "center" })
+                          : undefined
+                      }
+                      className={`mb-2 ${hit ? "rounded-lg bg-gradient-to-r from-coral/30 to-rose/20 px-2 py-1" : ""}`}
+                    >
+                      {line}
+                    </p>
+                  );
+                })}
               </div>
             </section>
           )}
+
 
           <RelatedMaterials
             itemId={item.id}
