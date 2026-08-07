@@ -437,7 +437,7 @@ export const registerUploadedItem = createServerFn({ method: "POST" })
 
 /* ------------------------------ AI --------------------------------- */
 const LOVABLE_AI_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
-const MAX_INLINE_BYTES = 15 * 1024 * 1024;
+const MAX_INLINE_BYTES = 20 * 1024 * 1024;
 
 interface AnalysisResult {
   title?: string;
@@ -452,18 +452,24 @@ interface AnalysisResult {
 
 function buildSystemPrompt(): string {
   return `You are Ember, an AI librarian analyzing a user's saved knowledge item.
-You are meticulous, warm, and precise. Read/watch/listen to the content carefully and return a JSON object.
+You are meticulous, warm, and precise. Read/watch/listen to the material provided and return a JSON object.
+
+GROUNDING RULES (absolute):
+- Use ONLY the material given to you: attached media, transcript, extracted text, and the user's own description.
+- NEVER infer or invent content from a URL, a filename, a channel name, or general knowledge. If the actual content was not provided, say so.
+- If the provided material is too thin to summarise, set summary_short and summary_long to a short honest statement such as "The content of this item could not be retrieved, so it hasn't been analysed yet." and return empty key_points.
+- Never fabricate a transcript. Only return a transcript you produced from provided audio/video, or the transcript supplied to you.
 
 Return ONLY valid JSON matching this shape:
 {
-  "title": string (optional — a better, concise title if the current one is generic or missing),
+  "title": string (optional — a better, concise title, only if grounded in the actual content),
   "summary_short": string (a real 3-5 sentence paragraph — cover what the content is about, the main argument or purpose, and the standout insight. Do NOT write a one-line teaser.),
   "summary_long": string (3-6 paragraphs, plain text with \\n\\n between them, covering context, main ideas, evidence or examples, and takeaways),
   "key_points": string[] (3-8 actionable takeaways, each a complete sentence),
   "tags": string[] (5-12 lowercase, hyphen-free searchable keywords),
   "suggested_collections": string[] (1-4 short collection names in Title Case, e.g. "Recipes", "Leadership", "Psychology"),
-  "transcript": string | null (only for videos/audio: the spoken transcript if you can produce one; otherwise null),
-  "timestamps": [{"time": "MM:SS", "label": string}] (only for videos/audio, key moments; otherwise omit)
+  "transcript": string | null (only for videos/audio you actually received; otherwise null),
+  "timestamps": [{"time": "MM:SS", "label": string}] (only when grounded in real timings; otherwise omit)
 }`;
 }
 
