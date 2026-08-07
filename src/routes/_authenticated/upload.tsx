@@ -187,7 +187,11 @@ function LinkForm() {
       const item = await createItemFromLink({ data: { url, title: title || undefined } });
       analyzeItem({ data: { id: item.id } })
         .then(() => qc.invalidateQueries({ queryKey: ["items"] }))
-        .catch(() => {});
+        .catch((e) =>
+          toast.error("Analysis failed", {
+            description: e instanceof Error ? e.message : "Unknown error",
+          }),
+        );
       return item;
     },
     onSuccess: (item) => {
@@ -248,7 +252,11 @@ function NoteForm() {
       const item = await createNote({ data: { title, content } });
       analyzeItem({ data: { id: item.id } })
         .then(() => qc.invalidateQueries({ queryKey: ["items"] }))
-        .catch(() => {});
+        .catch((e) =>
+          toast.error("Analysis failed", {
+            description: e instanceof Error ? e.message : "Unknown error",
+          }),
+        );
       return item;
     },
     onSuccess: (item) => {
