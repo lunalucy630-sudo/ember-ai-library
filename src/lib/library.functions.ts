@@ -340,7 +340,12 @@ export const createItemFromLink = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     const { source, kind } = detectLinkSource(data.url);
-    const title = data.title?.trim() || guessTitleFromUrl(data.url);
+    const { fetchLinkContent } = await import("./link-fetch.server");
+    const fetched = await fetchLinkContent(data.url, source);
+
+    const title =
+      data.title?.trim() || fetched.title?.trim() || guessTitleFromUrl(data.url);
+
     const { data: item, error } = await context.supabase
       .from("items")
       .insert({
@@ -348,8 +353,13 @@ export const createItemFromLink = createServerFn({ method: "POST" })
         kind,
         source,
         title,
+        description: fetched.description?.slice(0, 4000) ?? null,
+        raw_content: fetched.content?.slice(0, 60000) ?? null,
+        transcript: fetched.transcript?.slice(0, 200000) ?? null,
+        manual_thumbnail_url: fetched.thumbnailUrl ?? null,
         source_url: data.url,
         status: "pending",
+        error_message: fetched.fetched ? null : fetched.note,
       })
       .select()
       .single();
