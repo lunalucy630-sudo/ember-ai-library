@@ -243,8 +243,7 @@ export async function fetchArticle(url: string): Promise<FetchedLink> {
   }
   out.title =
     metaTag(html, "og:title") ??
-    decodeEntities(html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1]?.trim() ?? "") ||
-    null;
+    (decodeEntities(html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1]?.trim() ?? "") || null);
   out.description = metaTag(html, "og:description") ?? metaTag(html, "description");
   out.thumbnailUrl = metaTag(html, "og:image");
   out.author = metaTag(html, "author");
