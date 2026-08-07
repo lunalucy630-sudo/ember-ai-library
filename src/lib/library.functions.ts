@@ -532,18 +532,48 @@ export const analyzeItem = createServerFn({ method: "POST" })
     try {
       const parts: Array<Record<string, unknown>> = [];
       let instruction = `Analyze this item titled "${item.title}".`;
+      let hasMaterial = false;
+      let fetchNote: string | null = null;
 
-      if (item.description) instruction += `\n\nUser-provided description:\n${item.description}`;
-      if (item.raw_content) instruction += `\n\nContent:\n${item.raw_content.slice(0, 40000)}`;
+      // Link items: (re)fetch real content so the model never guesses from a URL.
+      let description = item.description as string | null;
+      let rawContent = item.raw_content as string | null;
+      let transcript = item.transcript as string | null;
+      if (item.source_url && !rawContent && !transcript) {
+        const { fetchLinkContent } = await import("./link-fetch.server");
+        const fetched = await fetchLinkContent(item.source_url, item.source);
+        description = description ?? fetched.description;
+        rawContent = fetched.content;
+        transcript = fetched.transcript;
+        fetchNote = fetched.note;
+        const linkPatch: Record<string, unknown> = {};
+        if (rawContent) linkPatch.raw_content = rawContent.slice(0, 60000);
+        if (transcript) linkPatch.transcript = transcript.slice(0, 200000);
+        if (description && !item.description) linkPatch.description = description.slice(0, 4000);
+        if (fetched.thumbnailUrl && !item.manual_thumbnail_url)
+          linkPatch.manual_thumbnail_url = fetched.thumbnailUrl;
+        if (Object.keys(linkPatch).length > 0) {
+          await context.supabase.from("items").update(linkPatch as never).eq("id", data.id);
+        }
+      }
 
-      if (item.source_url && (item.source === "youtube" || item.source === "tiktok" || item.source === "instagram")) {
-        instruction += `\n\nSource URL: ${item.source_url}\nThis is a ${item.source} video. ${
-          item.source === "instagram"
-            ? "Instagram Reels can't be fetched directly (login-walled). Use the URL, title, and any description provided to produce your best-effort analysis, and note clearly in summary_long that the content wasn't fetched."
-            : "Analyze what you can infer from the URL and title."
-        }`;
-      } else if (item.source_url) {
-        instruction += `\n\nSource URL: ${item.source_url}`;
+      if (description) {
+        instruction += `\n\nDescription from the source:\n${description}`;
+        hasMaterial = true;
+      }
+      if (transcript) {
+        instruction += `\n\nTranscript (verbatim, timestamped):\n${transcript.slice(0, 60000)}`;
+        hasMaterial = true;
+      }
+      if (rawContent && rawContent !== transcript) {
+        instruction += `\n\nExtracted content:\n${rawContent.slice(0, 40000)}`;
+        hasMaterial = true;
+      }
+      if (item.source_url) {
+        instruction += `\n\nSource URL (reference only — do NOT infer content from it): ${item.source_url}`;
+      }
+      if (item.source_url && !transcript) {
+        instruction += `\n\nNo transcript is available for this item.${fetchNote ? ` (${fetchNote})` : ""}`;
       }
 
       if (item.storage_path && item.mime_type) {
@@ -553,30 +583,43 @@ export const analyzeItem = createServerFn({ method: "POST" })
         if (signed?.signedUrl) {
           const blob = await fetchAsBase64(signed.signedUrl);
           if (blob) {
+            hasMaterial = true;
             if (item.mime_type.startsWith("image/")) {
               parts.push({ type: "image_url", image_url: { url: `data:${blob.mime};base64,${blob.data}` } });
             } else if (item.mime_type.startsWith("audio/")) {
               const fmt = item.mime_type.split("/")[1]?.split(";")[0] || "webm";
               parts.push({ type: "input_audio", input_audio: { data: blob.data, format: fmt } });
-            } else if (
-              item.mime_type === "application/pdf" ||
-              item.mime_type.includes("document") ||
-              item.mime_type.includes("presentation")
-            ) {
+            } else {
+              // PDFs, office documents and video all travel as inline file parts.
               parts.push({
                 type: "file",
                 file: {
                   filename: item.title,
-                  file_data: `data:${blob.mime};base64,${blob.data}`,
+                  file_data: `data:${item.mime_type};base64,${blob.data}`,
                 },
               });
-            } else if (item.mime_type.startsWith("video/")) {
-              parts.push({ type: "image_url", image_url: { url: `data:${blob.mime};base64,${blob.data}` } });
             }
           } else {
-            instruction += `\n\n(Note: media file too large to inline. Base your analysis on the title, description, and any available metadata.)`;
+            fetchNote = `The file is larger than ${Math.round(MAX_INLINE_BYTES / (1024 * 1024))} MB, so it could not be analysed.`;
           }
         }
+      }
+
+      if (!hasMaterial) {
+        const note =
+          fetchNote ??
+          "The content of this item could not be retrieved, so it hasn't been analysed.";
+        await context.supabase
+          .from("items")
+          .update({
+            status: "failed",
+            error_message: note,
+            summary_short: note + " Add a title and description manually, or re-analyse.",
+            summary_long: note,
+            transcript: transcript ?? null,
+          } as never)
+          .eq("id", data.id);
+        throw new Error(note);
       }
 
       parts.unshift({ type: "text", text: instruction });
