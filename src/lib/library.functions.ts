@@ -663,12 +663,18 @@ export const analyzeItem = createServerFn({ method: "POST" })
         suggested_collections: Array.isArray(analysis.suggested_collections)
           ? analysis.suggested_collections.slice(0, 6)
           : [],
-        transcript: analysis.transcript ?? null,
+        // Never overwrite a real fetched transcript with a model-generated one.
+        transcript: transcript ?? analysis.transcript ?? null,
         timestamps: Array.isArray(analysis.timestamps) ? analysis.timestamps.slice(0, 30) : [],
         error_message: null,
       };
-      // If the model proposed a stronger title and the current one looks auto-derived, adopt it.
-      if (analysis.title && analysis.title.trim().length > 3 && /^https?:|—|\.[a-z]{2,4}$/i.test(item.title)) {
+      // Adopt a better title unless the user typed one themselves.
+      const autoDerived =
+        /^https?:/i.test(item.title) ||
+        /\.[a-z0-9]{2,4}$/i.test(item.title) ||
+        item.title.trim().length < 6 ||
+        (item.source_url !== null && item.title === guessTitleFromUrl(item.source_url));
+      if (analysis.title && analysis.title.trim().length > 3 && autoDerived) {
         patch.title = analysis.title.trim().slice(0, 200);
       }
 
