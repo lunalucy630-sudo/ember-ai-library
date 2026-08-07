@@ -340,7 +340,12 @@ export const createItemFromLink = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     const { source, kind } = detectLinkSource(data.url);
-    const title = data.title?.trim() || guessTitleFromUrl(data.url);
+    const { fetchLinkContent } = await import("./link-fetch.server");
+    const fetched = await fetchLinkContent(data.url, source);
+
+    const title =
+      data.title?.trim() || fetched.title?.trim() || guessTitleFromUrl(data.url);
+
     const { data: item, error } = await context.supabase
       .from("items")
       .insert({
@@ -348,8 +353,13 @@ export const createItemFromLink = createServerFn({ method: "POST" })
         kind,
         source,
         title,
+        description: fetched.description?.slice(0, 4000) ?? null,
+        raw_content: fetched.content?.slice(0, 60000) ?? null,
+        transcript: fetched.transcript?.slice(0, 200000) ?? null,
+        manual_thumbnail_url: fetched.thumbnailUrl ?? null,
         source_url: data.url,
         status: "pending",
+        error_message: fetched.fetched ? null : fetched.note,
       })
       .select()
       .single();
@@ -427,7 +437,7 @@ export const registerUploadedItem = createServerFn({ method: "POST" })
 
 /* ------------------------------ AI --------------------------------- */
 const LOVABLE_AI_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
-const MAX_INLINE_BYTES = 15 * 1024 * 1024;
+const MAX_INLINE_BYTES = 20 * 1024 * 1024;
 
 interface AnalysisResult {
   title?: string;
@@ -442,18 +452,24 @@ interface AnalysisResult {
 
 function buildSystemPrompt(): string {
   return `You are Ember, an AI librarian analyzing a user's saved knowledge item.
-You are meticulous, warm, and precise. Read/watch/listen to the content carefully and return a JSON object.
+You are meticulous, warm, and precise. Read/watch/listen to the material provided and return a JSON object.
+
+GROUNDING RULES (absolute):
+- Use ONLY the material given to you: attached media, transcript, extracted text, and the user's own description.
+- NEVER infer or invent content from a URL, a filename, a channel name, or general knowledge. If the actual content was not provided, say so.
+- If the provided material is too thin to summarise, set summary_short and summary_long to a short honest statement such as "The content of this item could not be retrieved, so it hasn't been analysed yet." and return empty key_points.
+- Never fabricate a transcript. Only return a transcript you produced from provided audio/video, or the transcript supplied to you.
 
 Return ONLY valid JSON matching this shape:
 {
-  "title": string (optional — a better, concise title if the current one is generic or missing),
+  "title": string (optional — a better, concise title, only if grounded in the actual content),
   "summary_short": string (a real 3-5 sentence paragraph — cover what the content is about, the main argument or purpose, and the standout insight. Do NOT write a one-line teaser.),
   "summary_long": string (3-6 paragraphs, plain text with \\n\\n between them, covering context, main ideas, evidence or examples, and takeaways),
   "key_points": string[] (3-8 actionable takeaways, each a complete sentence),
   "tags": string[] (5-12 lowercase, hyphen-free searchable keywords),
   "suggested_collections": string[] (1-4 short collection names in Title Case, e.g. "Recipes", "Leadership", "Psychology"),
-  "transcript": string | null (only for videos/audio: the spoken transcript if you can produce one; otherwise null),
-  "timestamps": [{"time": "MM:SS", "label": string}] (only for videos/audio, key moments; otherwise omit)
+  "transcript": string | null (only for videos/audio you actually received; otherwise null),
+  "timestamps": [{"time": "MM:SS", "label": string}] (only when grounded in real timings; otherwise omit)
 }`;
 }
 
@@ -516,18 +532,48 @@ export const analyzeItem = createServerFn({ method: "POST" })
     try {
       const parts: Array<Record<string, unknown>> = [];
       let instruction = `Analyze this item titled "${item.title}".`;
+      let hasMaterial = false;
+      let fetchNote: string | null = null;
 
-      if (item.description) instruction += `\n\nUser-provided description:\n${item.description}`;
-      if (item.raw_content) instruction += `\n\nContent:\n${item.raw_content.slice(0, 40000)}`;
+      // Link items: (re)fetch real content so the model never guesses from a URL.
+      let description = item.description as string | null;
+      let rawContent = item.raw_content as string | null;
+      let transcript = item.transcript as string | null;
+      if (item.source_url && !rawContent && !transcript) {
+        const { fetchLinkContent } = await import("./link-fetch.server");
+        const fetched = await fetchLinkContent(item.source_url, item.source);
+        description = description ?? fetched.description;
+        rawContent = fetched.content;
+        transcript = fetched.transcript;
+        fetchNote = fetched.note;
+        const linkPatch: Record<string, unknown> = {};
+        if (rawContent) linkPatch.raw_content = rawContent.slice(0, 60000);
+        if (transcript) linkPatch.transcript = transcript.slice(0, 200000);
+        if (description && !item.description) linkPatch.description = description.slice(0, 4000);
+        if (fetched.thumbnailUrl && !item.manual_thumbnail_url)
+          linkPatch.manual_thumbnail_url = fetched.thumbnailUrl;
+        if (Object.keys(linkPatch).length > 0) {
+          await context.supabase.from("items").update(linkPatch as never).eq("id", data.id);
+        }
+      }
 
-      if (item.source_url && (item.source === "youtube" || item.source === "tiktok" || item.source === "instagram")) {
-        instruction += `\n\nSource URL: ${item.source_url}\nThis is a ${item.source} video. ${
-          item.source === "instagram"
-            ? "Instagram Reels can't be fetched directly (login-walled). Use the URL, title, and any description provided to produce your best-effort analysis, and note clearly in summary_long that the content wasn't fetched."
-            : "Analyze what you can infer from the URL and title."
-        }`;
-      } else if (item.source_url) {
-        instruction += `\n\nSource URL: ${item.source_url}`;
+      if (description) {
+        instruction += `\n\nDescription from the source:\n${description}`;
+        hasMaterial = true;
+      }
+      if (transcript) {
+        instruction += `\n\nTranscript (verbatim, timestamped):\n${transcript.slice(0, 60000)}`;
+        hasMaterial = true;
+      }
+      if (rawContent && rawContent !== transcript) {
+        instruction += `\n\nExtracted content:\n${rawContent.slice(0, 40000)}`;
+        hasMaterial = true;
+      }
+      if (item.source_url) {
+        instruction += `\n\nSource URL (reference only — do NOT infer content from it): ${item.source_url}`;
+      }
+      if (item.source_url && !transcript) {
+        instruction += `\n\nNo transcript is available for this item.${fetchNote ? ` (${fetchNote})` : ""}`;
       }
 
       if (item.storage_path && item.mime_type) {
@@ -537,30 +583,43 @@ export const analyzeItem = createServerFn({ method: "POST" })
         if (signed?.signedUrl) {
           const blob = await fetchAsBase64(signed.signedUrl);
           if (blob) {
+            hasMaterial = true;
             if (item.mime_type.startsWith("image/")) {
               parts.push({ type: "image_url", image_url: { url: `data:${blob.mime};base64,${blob.data}` } });
             } else if (item.mime_type.startsWith("audio/")) {
               const fmt = item.mime_type.split("/")[1]?.split(";")[0] || "webm";
               parts.push({ type: "input_audio", input_audio: { data: blob.data, format: fmt } });
-            } else if (
-              item.mime_type === "application/pdf" ||
-              item.mime_type.includes("document") ||
-              item.mime_type.includes("presentation")
-            ) {
+            } else {
+              // PDFs, office documents and video all travel as inline file parts.
               parts.push({
                 type: "file",
                 file: {
                   filename: item.title,
-                  file_data: `data:${blob.mime};base64,${blob.data}`,
+                  file_data: `data:${item.mime_type};base64,${blob.data}`,
                 },
               });
-            } else if (item.mime_type.startsWith("video/")) {
-              parts.push({ type: "image_url", image_url: { url: `data:${blob.mime};base64,${blob.data}` } });
             }
           } else {
-            instruction += `\n\n(Note: media file too large to inline. Base your analysis on the title, description, and any available metadata.)`;
+            fetchNote = `The file is larger than ${Math.round(MAX_INLINE_BYTES / (1024 * 1024))} MB, so it could not be analysed.`;
           }
         }
+      }
+
+      if (!hasMaterial) {
+        const note =
+          fetchNote ??
+          "The content of this item could not be retrieved, so it hasn't been analysed.";
+        await context.supabase
+          .from("items")
+          .update({
+            status: "failed",
+            error_message: note,
+            summary_short: note + " Add a title and description manually, or re-analyse.",
+            summary_long: note,
+            transcript: transcript ?? null,
+          } as never)
+          .eq("id", data.id);
+        throw new Error(note);
       }
 
       parts.unshift({ type: "text", text: instruction });
@@ -604,12 +663,18 @@ export const analyzeItem = createServerFn({ method: "POST" })
         suggested_collections: Array.isArray(analysis.suggested_collections)
           ? analysis.suggested_collections.slice(0, 6)
           : [],
-        transcript: analysis.transcript ?? null,
+        // Never overwrite a real fetched transcript with a model-generated one.
+        transcript: transcript ?? analysis.transcript ?? null,
         timestamps: Array.isArray(analysis.timestamps) ? analysis.timestamps.slice(0, 30) : [],
         error_message: null,
       };
-      // If the model proposed a stronger title and the current one looks auto-derived, adopt it.
-      if (analysis.title && analysis.title.trim().length > 3 && /^https?:|—|\.[a-z]{2,4}$/i.test(item.title)) {
+      // Adopt a better title unless the user typed one themselves.
+      const autoDerived =
+        /^https?:/i.test(item.title) ||
+        /\.[a-z0-9]{2,4}$/i.test(item.title) ||
+        item.title.trim().length < 6 ||
+        (item.source_url !== null && item.title === guessTitleFromUrl(item.source_url));
+      if (analysis.title && analysis.title.trim().length > 3 && autoDerived) {
         patch.title = analysis.title.trim().slice(0, 200);
       }
 
