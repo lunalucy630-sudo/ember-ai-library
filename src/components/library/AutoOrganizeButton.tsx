@@ -13,6 +13,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { applyOrganize, proposeOrganize, type OrganizeAction } from "@/lib/organize.functions";
+import { getPreferredModelId } from "@/lib/ai-models";
 
 export function AutoOrganizeButton() {
   const { t } = useTranslation();
@@ -23,7 +24,7 @@ export function AutoOrganizeButton() {
   const [accepted, setAccepted] = useState<Set<number>>(new Set());
 
   const propose = useMutation({
-    mutationFn: (force: boolean) => proposeOrganize({ data: { force } }),
+    mutationFn: (force: boolean) => proposeOrganize({ data: { force, modelId: getPreferredModelId() } }),
     onSuccess: (plan) => {
       setRunId(plan.runId);
       setActions(plan.actions);

@@ -2,6 +2,7 @@ import { useTranslation } from "react-i18next";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getThread, sendChatMessage } from "@/lib/chat.functions";
+import { getPreferredModelId } from "@/lib/ai-models";
 import { useEffect, useRef, useState } from "react";
 import { Sparkles, Send, User, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -26,7 +27,7 @@ function ThreadPage() {
   });
 
   const send = useMutation({
-    mutationFn: (content: string) => sendChatMessage({ data: { threadId, content } }),
+    mutationFn: (content: string) => sendChatMessage({ data: { threadId, content, modelId: getPreferredModelId() } }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["chat-thread", threadId] });
       qc.invalidateQueries({ queryKey: ["chat-threads"] });
