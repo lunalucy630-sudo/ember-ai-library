@@ -89,13 +89,14 @@ export const deleteThread = createServerFn({ method: "POST" })
  */
 export const sendChatMessage = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { threadId: string; content: string; collectionId?: string | null; itemId?: string | null }) =>
+  .inputValidator((input: { threadId: string; content: string; collectionId?: string | null; itemId?: string | null; modelId?: string | null }) =>
     z
       .object({
         threadId: z.string().uuid(),
         content: z.string().min(1).max(4000),
         collectionId: z.string().uuid().nullish(),
         itemId: z.string().uuid().nullish(),
+        modelId: z.string().max(40).nullish(),
       })
       .parse(input),
   )

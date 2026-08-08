@@ -511,7 +511,9 @@ function fallbackSummary(item: { title: string; raw_content: string | null; desc
 
 export const analyzeItem = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { id: string }) => z.object({ id: z.string().uuid() }).parse(input))
+  .inputValidator((input: { id: string; modelId?: string | null }) =>
+    z.object({ id: z.string().uuid(), modelId: z.string().max(40).nullish() }).parse(input),
+  )
   .handler(async ({ data, context }) => {
     const key = process.env.LOVABLE_API_KEY;
     if (!key) throw new Error("Missing LOVABLE_API_KEY");
@@ -624,27 +626,15 @@ export const analyzeItem = createServerFn({ method: "POST" })
 
       parts.unshift({ type: "text", text: instruction });
 
-      const body = {
-        model: "google/gemini-2.5-flash",
+      const { callAI } = await import("./ai.server");
+      const { content } = await callAI({
+        modelId: data.modelId ?? null,
+        jsonMode: true,
         messages: [
           { role: "system", content: buildSystemPrompt() },
           { role: "user", content: parts },
         ],
-        response_format: { type: "json_object" as const },
-      };
-
-      const res = await fetch(LOVABLE_AI_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
-        body: JSON.stringify(body),
       });
-
-      if (!res.ok) {
-        const errText = await res.text();
-        throw new Error(`AI gateway ${res.status}: ${errText.slice(0, 400)}`);
-      }
-      const json = (await res.json()) as { choices?: Array<{ message?: { content?: string } }> };
-      const content = json.choices?.[0]?.message?.content ?? "";
       const analysis = extractJson(content);
       if (!analysis) throw new Error("AI returned unparseable response");
 
