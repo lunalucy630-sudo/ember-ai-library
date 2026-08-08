@@ -229,7 +229,6 @@
     "applySelected": "Apply {{count}} changes",
     "dismiss": "Dismiss",
     "fullReindex": "Force full re-index",
-    "applied": "Applied {{count}} changes",
-    "indexing": "Indexing {{done}} of {{total}} items…"
+    "applied": "Applied {{count}} changes"
   }
 }

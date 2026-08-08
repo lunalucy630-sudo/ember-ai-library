@@ -4,13 +4,9 @@ import { z } from "zod";
 
 export const indexLibrary = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { force?: boolean; itemIds?: string[]; maxItems?: number } | undefined) =>
+  .inputValidator((input: { force?: boolean; itemIds?: string[] } | undefined) =>
     z
-      .object({
-        force: z.boolean().optional(),
-        itemIds: z.array(z.string().uuid()).optional(),
-        maxItems: z.number().int().min(1).max(50).optional(),
-      })
+      .object({ force: z.boolean().optional(), itemIds: z.array(z.string().uuid()).optional() })
       .default({})
       .parse(input ?? {}),
   )
@@ -21,6 +17,5 @@ export const indexLibrary = createServerFn({ method: "POST" })
     return indexUserItems(context.supabase as never, context.userId, key, {
       force: data.force,
       itemIds: data.itemIds,
-      maxItems: data.maxItems,
     });
   });

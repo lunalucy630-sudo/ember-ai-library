@@ -55,8 +55,7 @@ export async function proposeOrganizePlan(
   key: string,
   opts: { force?: boolean; modelId?: string | null } = {},
 ): Promise<OrganizePlan> {
-  // Indexing is normally already done by the client's progress pass; this only fills gaps.
-  const { indexed } = await indexUserItems(supabase, userId, key, {});
+  const { indexed } = await indexUserItems(supabase, userId, key, { force: opts.force });
 
   const [{ data: items }, { data: collections }, { data: links }, { data: lastRun }] = await Promise.all([
     supabase

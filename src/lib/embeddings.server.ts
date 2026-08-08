@@ -110,77 +110,29 @@ export function buildChunks(item: Record<string, any>): Chunk[] {
   return chunks.slice(0, 120);
 }
 
-const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
-
-/** Serializes gateway calls and keeps a minimum gap between them. */
-let embedQueue: Promise<unknown> = Promise.resolve();
-let lastCallAt = 0;
-const MIN_GAP_MS = 500;
-const MAX_ATTEMPTS = 6;
-
-async function embedBatch(batch: string[], key: string): Promise<number[][]> {
-  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
-    const gap = MIN_GAP_MS - (Date.now() - lastCallAt);
-    if (gap > 0) await sleep(gap);
-    lastCallAt = Date.now();
-
+export async function embedTexts(texts: string[], key: string): Promise<number[][]> {
+  const out: number[][] = [];
+  for (let i = 0; i < texts.length; i += BATCH) {
+    const batch = texts.slice(i, i + BATCH).map((t) => t.slice(0, 6000));
     const res = await fetch(EMBEDDINGS_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
       body: JSON.stringify({ model: EMBEDDING_MODEL, input: batch }),
     });
-
-    if (res.status === 429 || res.status >= 500) {
-      const detail = (await res.text()).slice(0, 200);
-      if (attempt === MAX_ATTEMPTS) {
-        throw new Error(
-          res.status === 429
-            ? "Ember is still being rate limited by the AI service. Indexing saved what it could — press Auto Organize again in a minute to continue."
-            : `Embedding upstream error ${res.status}. ${detail}`,
-        );
-      }
-      const retryAfter = Number(res.headers.get("retry-after"));
-      const wait = Number.isFinite(retryAfter) && retryAfter > 0
-        ? retryAfter * 1000
-        : Math.min(20000, 1500 * 2 ** (attempt - 1)) + Math.random() * 500;
-      await sleep(wait);
-      continue;
-    }
-
+    if (res.status === 429) throw new Error("Rate limit while indexing — try again shortly.");
     if (res.status === 402) throw new Error("AI credits exhausted — add credits to continue.");
     if (!res.ok) throw new Error(`Embedding failed (${res.status}): ${(await res.text()).slice(0, 200)}`);
-
     const json = (await res.json()) as { data?: Array<{ index: number; embedding: number[] }> };
-    return (json.data ?? [])
-      .slice()
-      .sort((a, b) => a.index - b.index)
-      .map((d) => d.embedding);
+    const sorted = (json.data ?? []).slice().sort((a, b) => a.index - b.index);
+    for (const d of sorted) out.push(d.embedding);
   }
-  throw new Error("Embedding failed unexpectedly.");
-}
-
-export async function embedTexts(texts: string[], key: string): Promise<number[][]> {
-  // Chain onto the shared queue so concurrent callers never burst the gateway.
-  const run = embedQueue.then(async () => {
-    const out: number[][] = [];
-    for (let i = 0; i < texts.length; i += BATCH) {
-      const batch = texts.slice(i, i + BATCH).map((t) => t.slice(0, 6000));
-      out.push(...(await embedBatch(batch, key)));
-    }
-    return out;
-  });
-  embedQueue = run.catch(() => {});
-  return run;
+  return out;
 }
 
 export interface IndexResult {
   indexed: number;
   skipped: number;
   chunks: number;
-  /** Items still awaiting embedding after this pass. */
-  remaining: number;
-  /** Items that needed embedding when this pass started. */
-  pending: number;
 }
 
 /** Embed only items that are new or whose content changed. */
@@ -188,7 +140,7 @@ export async function indexUserItems(
   supabase: AnySupabase,
   userId: string,
   key: string,
-  opts: { force?: boolean; itemIds?: string[]; maxItems?: number } = {},
+  opts: { force?: boolean; itemIds?: string[] } = {},
 ): Promise<IndexResult> {
   let query = supabase
     .from("items")
@@ -199,10 +151,10 @@ export async function indexUserItems(
   const { data: items, error } = await query;
   if (error) throw new Error(error.message);
 
+  let indexed = 0;
   let skipped = 0;
+  let chunkCount = 0;
 
-  // Decide up front what actually needs work, so we can report progress.
-  const work: Array<{ item: Record<string, any>; hash: string; chunks: Chunk[] }> = [];
   for (const item of items ?? []) {
     const source = itemSourceText(item);
     if (source.trim().length < 30) {
@@ -214,28 +166,13 @@ export async function indexUserItems(
       skipped++;
       continue;
     }
+
     const chunks = buildChunks(item);
     if (!chunks.length) {
       skipped++;
       continue;
     }
-    work.push({ item, hash, chunks });
-  }
-
-  const pending = work.length;
-  const slice = opts.maxItems ? work.slice(0, opts.maxItems) : work;
-
-  // Embed across items in one shared request stream instead of one call per item.
-  const allTexts = slice.flatMap((w) => w.chunks.map((c) => c.content));
-  const vectors = allTexts.length ? await embedTexts(allTexts, key) : [];
-
-  let indexed = 0;
-  let chunkCount = 0;
-  let cursor = 0;
-
-  for (const { item, hash, chunks } of slice) {
-    const vecs = vectors.slice(cursor, cursor + chunks.length);
-    cursor += chunks.length;
+    const vectors = await embedTexts(chunks.map((c) => c.content), key);
 
     await supabase.from("item_chunks").delete().eq("item_id", item.id);
     const rows = chunks.map((c, i) => ({
@@ -245,7 +182,7 @@ export async function indexUserItems(
       content: c.content,
       timestamp_label: c.timestamp_label,
       section_label: c.section_label,
-      embedding: JSON.stringify(vecs[i] ?? []),
+      embedding: JSON.stringify(vectors[i] ?? []),
     }));
     const { error: insErr } = await supabase.from("item_chunks").insert(rows as never);
     if (insErr) throw new Error(insErr.message);
@@ -259,7 +196,7 @@ export async function indexUserItems(
     chunkCount += rows.length;
   }
 
-  return { indexed, skipped, chunks: chunkCount, pending, remaining: pending - indexed };
+  return { indexed, skipped, chunks: chunkCount };
 }
 
 export interface MatchedChunk {
