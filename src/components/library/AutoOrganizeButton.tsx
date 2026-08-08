@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { applyOrganize, proposeOrganize, type OrganizeAction } from "@/lib/organize.functions";
 import { getPreferredModelId } from "@/lib/ai-models";
+import { indexLibrary } from "@/lib/embeddings.functions";
 
 export function AutoOrganizeButton() {
   const { t } = useTranslation();
@@ -22,9 +23,23 @@ export function AutoOrganizeButton() {
   const [runId, setRunId] = useState<string | null>(null);
   const [actions, setActions] = useState<OrganizeAction[]>([]);
   const [accepted, setAccepted] = useState<Set<number>>(new Set());
+  const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
 
   const propose = useMutation({
-    mutationFn: (force: boolean) => proposeOrganize({ data: { force, modelId: getPreferredModelId() } }),
+    mutationFn: async (force: boolean) => {
+      // Index in small passes so we can show progress and stay under rate limits.
+      let done = 0;
+      let total = 0;
+      for (let pass = 0; pass < 60; pass++) {
+        const r = await indexLibrary({ data: { force: force && pass === 0, maxItems: 4 } });
+        if (pass === 0) total = r.pending;
+        done += r.indexed;
+        if (total > 0) setProgress({ done: Math.min(done, total), total });
+        if (r.remaining <= 0 || r.indexed === 0) break;
+      }
+      setProgress(null);
+      return proposeOrganize({ data: { force, modelId: getPreferredModelId() } });
+    },
     onSuccess: (plan) => {
       setRunId(plan.runId);
       setActions(plan.actions);
@@ -32,7 +47,10 @@ export function AutoOrganizeButton() {
       setOpen(true);
       if (plan.actions.length === 0) toast.success(t("organize.nothingToDo"));
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => {
+      setProgress(null);
+      toast.error(e.message);
+    },
   });
 
   const apply = useMutation({
@@ -68,7 +86,9 @@ export function AutoOrganizeButton() {
         ) : (
           <Sparkles className="mr-1.5 h-4 w-4" />
         )}
-        {t("organize.button")}
+        {progress
+          ? t("organize.indexing", { done: progress.done, total: progress.total })
+          : t("organize.button")}
       </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>
