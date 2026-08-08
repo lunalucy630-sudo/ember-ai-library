@@ -115,8 +115,8 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 /** Serializes gateway calls and keeps a minimum gap between them. */
 let embedQueue: Promise<unknown> = Promise.resolve();
 let lastCallAt = 0;
-const MIN_GAP_MS = 350;
-const MAX_ATTEMPTS = 5;
+const MIN_GAP_MS = 500;
+const MAX_ATTEMPTS = 6;
 
 async function embedBatch(batch: string[], key: string): Promise<number[][]> {
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
@@ -135,14 +135,14 @@ async function embedBatch(batch: string[], key: string): Promise<number[][]> {
       if (attempt === MAX_ATTEMPTS) {
         throw new Error(
           res.status === 429
-            ? `Embedding rate limit persisted after ${MAX_ATTEMPTS} retries. ${detail}`
+            ? "Ember is still being rate limited by the AI service. Indexing saved what it could — press Auto Organize again in a minute to continue."
             : `Embedding upstream error ${res.status}. ${detail}`,
         );
       }
       const retryAfter = Number(res.headers.get("retry-after"));
       const wait = Number.isFinite(retryAfter) && retryAfter > 0
         ? retryAfter * 1000
-        : Math.min(16000, 800 * 2 ** (attempt - 1)) + Math.random() * 400;
+        : Math.min(20000, 1500 * 2 ** (attempt - 1)) + Math.random() * 500;
       await sleep(wait);
       continue;
     }
