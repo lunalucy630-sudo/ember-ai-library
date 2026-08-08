@@ -1,8 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { indexUserItems } from "./embeddings.server";
-
-const AI_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
-const MODEL = "google/gemini-3.6-flash";
+import { callAI } from "./ai.server";
 
 type AnySupabase = SupabaseClient<any, any, any>;
 
@@ -55,7 +53,7 @@ export async function proposeOrganizePlan(
   supabase: AnySupabase,
   userId: string,
   key: string,
-  opts: { force?: boolean } = {},
+  opts: { force?: boolean; modelId?: string | null } = {},
 ): Promise<OrganizePlan> {
   const { indexed } = await indexUserItems(supabase, userId, key, { force: opts.force });
 
@@ -139,27 +137,18 @@ Return STRICT JSON only:
  {"type":"merge","fromCollectionId":"<uuid>","intoCollectionId":"<uuid>","reason":"..."}
 ]}`;
 
-  const res = await fetch(AI_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
-    body: JSON.stringify({
-      model: MODEL,
-      messages: [
-        { role: "system", content: system },
-        {
-          role: "user",
-          content: `EXISTING COLLECTIONS:\n${colLines}\n\nITEMS TO ORGANIZE:\n${itemLines}`,
-        },
-      ],
-    }),
+  const { content: raw } = await callAI({
+    modelId: opts.modelId ?? null,
+    jsonMode: true,
+    messages: [
+      { role: "system", content: system },
+      {
+        role: "user",
+        content: `EXISTING COLLECTIONS:\n${colLines}\n\nITEMS TO ORGANIZE:\n${itemLines}`,
+      },
+    ],
   });
 
-  if (res.status === 429) throw new Error("Rate limit — please try again in a moment.");
-  if (res.status === 402) throw new Error("AI credits exhausted — add credits to continue.");
-  if (!res.ok) throw new Error(`AI gateway ${res.status}: ${(await res.text()).slice(0, 200)}`);
-
-  const json = (await res.json()) as { choices?: Array<{ message?: { content?: string } }> };
-  const raw = json.choices?.[0]?.message?.content ?? "{}";
   const parsed = safeJson(raw);
 
   const titleOf = (id: string) => allItems.find((i: any) => i.id === id)?.title ?? "Untitled";

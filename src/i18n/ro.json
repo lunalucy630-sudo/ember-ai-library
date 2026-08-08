@@ -180,7 +180,9 @@
       "ocean": "Ocean",
       "plum": "Prună",
       "graphite": "Grafit"
-    }
+    },
+    "aiModel": "Model AI",
+    "aiModelHint": "Folosit pentru chat, rezumate și auto-organizare. Ember trece automat pe alt furnizor dacă acesta eșuează."
   },
   "common": {
     "cancel": "Anulează",

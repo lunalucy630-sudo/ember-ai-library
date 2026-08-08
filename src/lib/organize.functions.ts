@@ -7,14 +7,17 @@ export type { OrganizeAction, OrganizePlan };
 
 export const proposeOrganize = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { force?: boolean } | undefined) =>
-    z.object({ force: z.boolean().optional() }).default({}).parse(input ?? {}),
+  .inputValidator((input: { force?: boolean; modelId?: string | null } | undefined) =>
+    z
+      .object({ force: z.boolean().optional(), modelId: z.string().max(40).nullish() })
+      .default({})
+      .parse(input ?? {}),
   )
   .handler(async ({ data, context }) => {
     const key = process.env.LOVABLE_API_KEY;
     if (!key) throw new Error("Missing LOVABLE_API_KEY");
     const { proposeOrganizePlan } = await import("./organize.server");
-    return proposeOrganizePlan(context.supabase as never, context.userId, key, { force: data.force });
+    return proposeOrganizePlan(context.supabase as never, context.userId, key, { force: data.force, modelId: data.modelId ?? null });
   });
 
 export const applyOrganize = createServerFn({ method: "POST" })

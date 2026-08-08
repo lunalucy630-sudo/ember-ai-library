@@ -1,8 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { indexUserItems, searchChunks } from "./embeddings.server";
-
-const AI_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
-const MODEL = "google/gemini-3.6-flash";
+import { callAI } from "./ai.server";
 
 type AnySupabase = SupabaseClient<any, any, any>;
 
@@ -10,7 +8,13 @@ export async function answerLibraryQuestion(
   supabase: AnySupabase,
   userId: string,
   key: string,
-  input: { threadId: string; content: string; collectionId?: string | null; itemId?: string | null },
+  input: {
+    threadId: string;
+    content: string;
+    collectionId?: string | null;
+    itemId?: string | null;
+    modelId?: string | null;
+  },
 ) {
   const { error: insertErr } = await supabase.from("chat_messages").insert({
     thread_id: input.threadId,
@@ -130,18 +134,10 @@ ${contextBlock || "(nothing available in this scope yet)"}`;
     })),
   ];
 
-  const res = await fetch(AI_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
-    body: JSON.stringify({ model: MODEL, messages }),
+  const { content: assistant } = await callAI({
+    messages: messages as never,
+    modelId: input.modelId ?? null,
   });
-
-  if (res.status === 429) throw new Error("Rate limit — please try again in a moment.");
-  if (res.status === 402) throw new Error("AI credits exhausted — add credits in workspace settings.");
-  if (!res.ok) throw new Error(`AI gateway ${res.status}: ${(await res.text()).slice(0, 300)}`);
-
-  const json = (await res.json()) as { choices?: Array<{ message?: { content?: string } }> };
-  const assistant = json.choices?.[0]?.message?.content ?? "I'm not sure how to answer that.";
 
   const cited = Array.from(
     new Set(

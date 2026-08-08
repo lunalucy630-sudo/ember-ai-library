@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { createThread, getThread, listThreads, sendChatMessage } from "@/lib/chat.functions";
+import { getPreferredModelId } from "@/lib/ai-models";
 
 interface Citation {
   id: string;
@@ -87,7 +88,7 @@ export function ScopedChatPanel({ collectionId, itemId, titleById = {}, suggesti
         id = thread.id;
         setThreadId(id);
       }
-      return sendChatMessage({ data: { threadId: id, content, collectionId: collectionId ?? null, itemId: itemId ?? null } });
+      return sendChatMessage({ data: { threadId: id, content, collectionId: collectionId ?? null, itemId: itemId ?? null, modelId: getPreferredModelId() } });
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["chat-thread", threadId] });
