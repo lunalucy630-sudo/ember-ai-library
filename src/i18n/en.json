@@ -179,7 +179,9 @@
       "ocean": "Ocean",
       "plum": "Plum",
       "graphite": "Graphite"
-    }
+    },
+    "aiModel": "AI model",
+    "aiModelHint": "Used for chat, summaries and auto-organize. Ember falls back to another provider if this one fails."
   },
   "common": {
     "cancel": "Cancel",
