@@ -230,6 +230,7 @@
     "applySelected": "Aplică {{count}} modificări",
     "dismiss": "Renunță",
     "fullReindex": "Reindexează tot",
-    "applied": "S-au aplicat {{count}} modificări"
+    "applied": "S-au aplicat {{count}} modificări",
+    "indexing": "Se indexează {{done}} din {{total}} materiale…"
   }
 }
