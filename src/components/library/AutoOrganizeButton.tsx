@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { applyOrganize, proposeOrganize, type OrganizeAction } from "@/lib/organize.functions";
 import { getPreferredModelId } from "@/lib/ai-models";
+import { indexLibrary } from "@/lib/embeddings.functions";
 
 export function AutoOrganizeButton() {
   const { t } = useTranslation();
@@ -22,6 +23,7 @@ export function AutoOrganizeButton() {
   const [runId, setRunId] = useState<string | null>(null);
   const [actions, setActions] = useState<OrganizeAction[]>([]);
   const [accepted, setAccepted] = useState<Set<number>>(new Set());
+  const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
 
   const propose = useMutation({
     mutationFn: async (force: boolean) => {
@@ -84,7 +86,9 @@ export function AutoOrganizeButton() {
         ) : (
           <Sparkles className="mr-1.5 h-4 w-4" />
         )}
-        {t("organize.button")}
+        {progress
+          ? t("organize.indexing", { done: progress.done, total: progress.total })
+          : t("organize.button")}
       </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>
