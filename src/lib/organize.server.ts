@@ -53,7 +53,7 @@ export async function proposeOrganizePlan(
   supabase: AnySupabase,
   userId: string,
   key: string,
-  opts: { force?: boolean } = {},
+  opts: { force?: boolean; modelId?: string | null } = {},
 ): Promise<OrganizePlan> {
   const { indexed } = await indexUserItems(supabase, userId, key, { force: opts.force });
 
@@ -138,7 +138,7 @@ Return STRICT JSON only:
 ]}`;
 
   const { content: raw } = await callAI({
-    modelId,
+    modelId: opts.modelId ?? null,
     jsonMode: true,
     messages: [
       { role: "system", content: system },
