@@ -77,11 +77,20 @@
     "reanalyzing": "Re-analysing…",
     "understanding": "Understanding…",
     "failedShort": "Failed",
-
     "failed": "Analysis failed.",
     "emptyTitle": "Your library is waiting",
     "emptyBody": "Upload a video, paste a YouTube link, or drop in a PDF. Ember will read, watch, and remember everything.",
-    "emptyCta": "Add your first item"
+    "emptyCta": "Add your first item",
+    "retryAll_one": "Retry {{count}} item",
+    "retryAll_other": "Retry {{count}} items",
+    "filterPlaceholder": "Filter your library…",
+    "all": "All",
+    "noFilterMatch": "Nothing matches these filters.",
+    "sort": {
+      "new": "Newest",
+      "old": "Oldest",
+      "title": "A–Z"
+    }
   },
   "upload": {
     "title": "Add to your library",
@@ -153,7 +162,8 @@
     "searching": "Looking…",
     "search": "Search",
     "hint": "Try “videos about leadership”, “recipe with chicken”, or “lecture about child development”.",
-    "noMatch": "Nothing matched. Try different words, or ask Ember in chat."
+    "noMatch": "Nothing matched. Try different words, or ask Ember in chat.",
+    "match": "{{pct}}% match"
   },
   "chat": {
     "askEmber": "Ask Ember",
@@ -234,5 +244,13 @@
     "dismiss": "Dismiss",
     "fullReindex": "Force full re-index",
     "applied": "Applied {{count}} changes"
+  },
+  "kinds": {
+    "video": "Videos",
+    "document": "Documents",
+    "image": "Images",
+    "audio": "Audio",
+    "note": "Notes",
+    "link": "Links"
   }
 }

@@ -78,11 +78,21 @@
     "reanalyzing": "Se reanalizează…",
     "understanding": "Se înțelege…",
     "failedShort": "Eșuat",
-
     "failed": "Analiza a eșuat.",
     "emptyTitle": "Biblioteca ta te așteaptă",
     "emptyBody": "Încarcă un videoclip, adaugă un link YouTube sau lasă aici un PDF. Ember le citește, le urmărește și ține minte tot.",
-    "emptyCta": "Adaugă primul element"
+    "emptyCta": "Adaugă primul element",
+    "retryAll_one": "Reîncearcă {{count}} element",
+    "retryAll_few": "Reîncearcă {{count}} elemente",
+    "retryAll_other": "Reîncearcă {{count}} de elemente",
+    "filterPlaceholder": "Filtrează biblioteca…",
+    "all": "Toate",
+    "noFilterMatch": "Nimic nu corespunde acestor filtre.",
+    "sort": {
+      "new": "Cele mai noi",
+      "old": "Cele mai vechi",
+      "title": "A–Z"
+    }
   },
   "upload": {
     "title": "Adaugă în bibliotecă",
@@ -154,7 +164,8 @@
     "searching": "Caut…",
     "search": "Caută",
     "hint": "Încearcă „videoclipuri despre leadership”, „rețetă cu pui” sau „curs despre dezvoltarea copilului”.",
-    "noMatch": "Nimic nu se potrivește. Încearcă alte cuvinte sau întreabă Ember în chat."
+    "noMatch": "Nimic nu se potrivește. Încearcă alte cuvinte sau întreabă Ember în chat.",
+    "match": "potrivire {{pct}}%"
   },
   "chat": {
     "askEmber": "Întreabă Ember",
@@ -235,5 +246,13 @@
     "dismiss": "Renunță",
     "fullReindex": "Reindexează tot",
     "applied": "S-au aplicat {{count}} modificări"
+  },
+  "kinds": {
+    "video": "Videoclipuri",
+    "document": "Documente",
+    "image": "Imagini",
+    "audio": "Audio",
+    "note": "Notițe",
+    "link": "Linkuri"
   }
 }
