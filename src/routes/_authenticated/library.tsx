@@ -18,7 +18,8 @@ import {
   Loader2,
   AlertCircle,
   RefreshCw,
-
+  Search,
+  ArrowUpDown,
 } from "lucide-react";
 import { AutoOrganizeButton } from "@/components/library/AutoOrganizeButton";
 
@@ -35,20 +36,63 @@ const kindIcon = {
   link: LinkIcon,
 } as const;
 
+const KINDS = ["video", "document", "image", "audio", "note", "link"] as const;
+
 function LibraryPage() {
   const { t } = useTranslation();
+  const qc = useQueryClient();
+  const [q, setQ] = useState("");
+  const [kind, setKind] = useState<string | null>(null);
+  const [onlyFailed, setOnlyFailed] = useState(false);
+  const [sort, setSort] = useState<"new" | "old" | "title">("new");
+
   const { data: items = [], isLoading } = useQuery({
     queryKey: ["items"],
     queryFn: () => listItems(),
-    refetchInterval: (q) => {
-      const list = (q.state.data as LibraryItem[] | undefined) ?? [];
+    refetchInterval: (query) => {
+      const list = (query.state.data as LibraryItem[] | undefined) ?? [];
       return list.some((i) => i.status === "processing" || i.status === "pending") ? 4000 : false;
     },
   });
 
+  const broken = items.filter(
+    (i) => i.status === "failed" || (i.status === "ready" && !i.summary_short),
+  );
+
+  const retryAll = useMutation({
+    mutationFn: async () => {
+      for (const it of broken) {
+        try {
+          await analyzeItem({ data: { id: it.id } });
+        } catch {
+          /* surfaced per-card */
+        }
+      }
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: ["items"] }),
+  });
+
+  const visible = useMemo(() => {
+    const needle = q.trim().toLowerCase();
+    let list = items.filter((i) => {
+      if (kind && i.kind !== kind) return false;
+      if (onlyFailed && i.status !== "failed") return false;
+      if (!needle) return true;
+      return [i.title, i.summary_short, ...(i.tags ?? [])]
+        .filter(Boolean)
+        .some((v) => String(v).toLowerCase().includes(needle));
+    });
+    list = [...list].sort((a, b) => {
+      if (sort === "title") return a.title.localeCompare(b.title);
+      const d = new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+      return sort === "old" ? d : -d;
+    });
+    return list;
+  }, [items, q, kind, onlyFailed, sort]);
+
   return (
     <div className="mx-auto max-w-6xl">
-      <header className="mb-8 flex flex-wrap items-end justify-between gap-4">
+      <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="font-display text-4xl font-semibold tracking-tight md:text-5xl">
             {t("library.title")}
@@ -60,6 +104,21 @@ function LibraryPage() {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          {broken.length > 0 && (
+            <Button
+              variant="outline"
+              onClick={() => retryAll.mutate()}
+              disabled={retryAll.isPending}
+              className="rounded-full"
+            >
+              {retryAll.isPending ? (
+                <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
+              ) : (
+                <RefreshCw className="mr-1.5 h-4 w-4" />
+              )}
+              {t("library.retryAll", { count: broken.length })}
+            </Button>
+          )}
           <AutoOrganizeButton />
           <Link to="/upload">
             <Button className="rounded-full bg-gradient-to-r from-coral to-rose px-5 text-primary-foreground shadow-[var(--shadow-soft)]">
@@ -69,6 +128,42 @@ function LibraryPage() {
         </div>
       </header>
 
+      {items.length > 0 && (
+        <div className="glass mb-6 flex flex-wrap items-center gap-2 rounded-3xl p-3">
+          <div className="flex min-w-[200px] flex-1 items-center gap-2 rounded-full bg-card/60 px-3">
+            <Search className="h-4 w-4 text-muted-foreground" />
+            <Input
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder={t("library.filterPlaceholder")}
+              className="h-9 border-none bg-transparent shadow-none focus-visible:ring-0"
+            />
+          </div>
+          <div className="flex flex-wrap items-center gap-1.5">
+            <Chip active={!kind && !onlyFailed} onClick={() => { setKind(null); setOnlyFailed(false); }}>
+              {t("library.all")}
+            </Chip>
+            {KINDS.map((k) => (
+              <Chip key={k} active={kind === k} onClick={() => setKind(kind === k ? null : k)}>
+                {t(`kinds.${k}`, { defaultValue: k })}
+              </Chip>
+            ))}
+            <Chip active={onlyFailed} onClick={() => setOnlyFailed(!onlyFailed)}>
+              {t("library.failedShort")}
+            </Chip>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="rounded-full text-xs text-muted-foreground"
+            onClick={() => setSort(sort === "new" ? "old" : sort === "old" ? "title" : "new")}
+          >
+            <ArrowUpDown className="mr-1 h-3.5 w-3.5" />
+            {t(`library.sort.${sort}`)}
+          </Button>
+        </div>
+      )}
+
       {isLoading ? (
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 6 }).map((_, i) => (
@@ -77,13 +172,18 @@ function LibraryPage() {
         </div>
       ) : items.length === 0 ? (
         <EmptyState />
+      ) : visible.length === 0 ? (
+        <div className="glass rounded-3xl p-8 text-center text-sm text-muted-foreground">
+          {t("library.noFilterMatch")}
+        </div>
       ) : (
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {items.map((it) => (
+          {visible.map((it) => (
             <ItemCard key={it.id} item={it} />
           ))}
         </div>
       )}
+
     </div>
   );
 }
