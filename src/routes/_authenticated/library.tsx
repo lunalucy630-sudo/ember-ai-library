@@ -85,8 +85,21 @@ function LibraryPage() {
 
 function ItemCard({ item }: { item: LibraryItem }) {
   const { t } = useTranslation();
+  const qc = useQueryClient();
   const Icon = kindIcon[item.kind] ?? StickyNote;
-  const processing = item.status === "pending" || item.status === "processing";
+  const reanalyze = useMutation({
+    mutationFn: () => analyzeItem({ data: { id: item.id } }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["items"] });
+      qc.invalidateQueries({ queryKey: ["item", item.id] });
+    },
+  });
+  const processing =
+    item.status === "pending" || item.status === "processing" || reanalyze.isPending;
+  const errorText =
+    (reanalyze.error instanceof Error ? reanalyze.error.message : null) ??
+    (item.status === "failed" ? item.error_message ?? t("library.failed") : null);
+
 
   return (
     <Link
