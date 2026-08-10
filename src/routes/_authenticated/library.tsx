@@ -304,3 +304,27 @@ function EmptyState() {
     </div>
   );
 }
+
+function Chip({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`rounded-full px-3 py-1 text-[11px] capitalize transition-colors ${
+        active
+          ? "bg-gradient-to-r from-coral to-rose text-primary-foreground shadow-[var(--shadow-soft)]"
+          : "bg-card/60 text-muted-foreground hover:text-foreground"
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
