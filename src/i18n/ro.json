@@ -75,6 +75,10 @@
     "add": "Adaugă în bibliotecă",
     "processing": "Ember învață despre acest element…",
     "notAnalyzed": "Neanalizat încă.",
+    "reanalyzing": "Se reanalizează…",
+    "understanding": "Se înțelege…",
+    "failedShort": "Eșuat",
+
     "failed": "Analiza a eșuat.",
     "emptyTitle": "Biblioteca ta te așteaptă",
     "emptyBody": "Încarcă un videoclip, adaugă un link YouTube sau lasă aici un PDF. Ember le citește, le urmărește și ține minte tot.",

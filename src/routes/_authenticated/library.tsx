@@ -1,7 +1,8 @@
 import { useTranslation } from "react-i18next";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
-import { listItems, type LibraryItem } from "@/lib/library.functions";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { analyzeItem, listItems, type LibraryItem } from "@/lib/library.functions";
+
 import { Button } from "@/components/ui/button";
 import {
   Video,
@@ -14,6 +15,8 @@ import {
   Plus,
   Loader2,
   AlertCircle,
+  RefreshCw,
+
 } from "lucide-react";
 import { AutoOrganizeButton } from "@/components/library/AutoOrganizeButton";
 
@@ -85,8 +88,21 @@ function LibraryPage() {
 
 function ItemCard({ item }: { item: LibraryItem }) {
   const { t } = useTranslation();
+  const qc = useQueryClient();
   const Icon = kindIcon[item.kind] ?? StickyNote;
-  const processing = item.status === "pending" || item.status === "processing";
+  const reanalyze = useMutation({
+    mutationFn: () => analyzeItem({ data: { id: item.id } }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["items"] });
+      qc.invalidateQueries({ queryKey: ["item", item.id] });
+    },
+  });
+  const processing =
+    item.status === "pending" || item.status === "processing" || reanalyze.isPending;
+  const errorText =
+    (reanalyze.error instanceof Error ? reanalyze.error.message : null) ??
+    (item.status === "failed" ? item.error_message ?? t("library.failed") : null);
+
 
   return (
     <Link
@@ -109,8 +125,14 @@ function ItemCard({ item }: { item: LibraryItem }) {
 
       <p className="mt-2 line-clamp-3 min-h-[3.5rem] text-sm text-muted-foreground">
         {item.summary_short ??
-          (processing ? t("library.processing") : item.status === "failed" ? item.error_message ?? t("library.failed") : t("library.notAnalyzed"))}
+          (processing ? t("library.processing") : errorText ?? t("library.notAnalyzed"))}
       </p>
+
+      {errorText && !processing && (
+        <p className="mt-2 line-clamp-3 rounded-2xl bg-destructive/10 px-3 py-2 text-[11px] text-destructive">
+          {errorText}
+        </p>
+      )}
 
       {item.tags && item.tags.length > 0 && (
         <div className="mt-4 flex flex-wrap gap-1.5">
@@ -125,19 +147,38 @@ function ItemCard({ item }: { item: LibraryItem }) {
         </div>
       )}
 
-      <div className="mt-4 flex items-center justify-between text-[11px] text-muted-foreground">
+      <div className="mt-4 flex items-center justify-between gap-2 text-[11px] text-muted-foreground">
         <span>{new Date(item.created_at).toLocaleDateString()}</span>
-        {processing && (
-          <span className="inline-flex items-center gap-1 text-coral">
-            <Loader2 className="h-3 w-3 animate-spin" /> Understanding…
-          </span>
-        )}
-        {item.status === "failed" && (
-          <span className="inline-flex items-center gap-1 text-destructive">
-            <AlertCircle className="h-3 w-3" /> Failed
-          </span>
-        )}
+        <div className="flex items-center gap-2">
+          {processing ? (
+            <span className="inline-flex items-center gap-1 text-coral">
+              <Loader2 className="h-3 w-3 animate-spin" />
+              {reanalyze.isPending ? t("library.reanalyzing") : t("library.understanding")}
+            </span>
+          ) : errorText ? (
+            <span className="inline-flex items-center gap-1 text-destructive">
+              <AlertCircle className="h-3 w-3" /> {t("library.failedShort")}
+            </span>
+          ) : null}
+          <Button
+            type="button"
+            size="sm"
+            variant="ghost"
+            disabled={processing}
+            aria-label={t("item.reanalyze")}
+            title={t("item.reanalyze")}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              reanalyze.mutate();
+            }}
+            className="h-7 rounded-full px-2 text-[11px] text-muted-foreground hover:text-foreground"
+          >
+            <RefreshCw className={`h-3.5 w-3.5 ${reanalyze.isPending ? "animate-spin" : ""}`} />
+          </Button>
+        </div>
       </div>
+
     </Link>
   );
 }

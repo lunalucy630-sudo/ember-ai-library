@@ -74,6 +74,10 @@
     "add": "Add to library",
     "processing": "Ember is understanding this…",
     "notAnalyzed": "Not analyzed yet.",
+    "reanalyzing": "Re-analysing…",
+    "understanding": "Understanding…",
+    "failedShort": "Failed",
+
     "failed": "Analysis failed.",
     "emptyTitle": "Your library is waiting",
     "emptyBody": "Upload a video, paste a YouTube link, or drop in a PDF. Ember will read, watch, and remember everything.",
