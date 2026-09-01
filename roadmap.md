@@ -35,3 +35,14 @@
 - [ ] Components reference tokens only (no hex, no bg-black/text-white)
 - [ ] Workshop identity: deep plum / muted violet / dusky wine / warm parchment, tinted dark, artwork stays the focus
 - [ ] Audit both themes: inputs, dialogs, dropdowns, nav, hover/selected, empty + loading states, media previews
+
+## Translation (new phase, after Phase 4)
+- [ ] `item_translations` table: source item, source lang (auto-detected), target lang, content (structured: segments with timestamp/page/section), provider+model, version, user-edited flag, created_at — original never overwritten
+- [ ] 🌐 Translate action on documents, PDFs, notes, text, transcripts, captions, saved web text
+- [ ] Modes: whole item / page / section / selected text; views Original | Translation | Side-by-side
+- [ ] Video & audio: keep timestamps, jump-to-time from translated transcript; translated captions as an extra representation
+- [ ] Documents: keep page refs, headings, paragraphs, lists, citations; translated text visually distinguished
+- [ ] Auto-detect + searchable target-language picker (EN, RO, ES, FR, DE, IT, PT, PL, RU, UK, JA, KO, ZH, AR — extensible list)
+- [ ] Route through the capability-based AI router (translation capability, language pair, context length, formatting, availability, cost); allow non-AI translation paths; never hard-code one provider
+- [ ] Translations searchable but labelled as translations; citations always point at the original source
+- [ ] Delete a translation without touching the original; never auto-translate unless the user opts in
