@@ -99,6 +99,7 @@ export type Database = {
           name: string
           updated_at: string
           user_id: string
+          workspace_id: string | null
         }
         Insert: {
           ai_managed?: boolean
@@ -111,6 +112,7 @@ export type Database = {
           name: string
           updated_at?: string
           user_id: string
+          workspace_id?: string | null
         }
         Update: {
           ai_managed?: boolean
@@ -123,8 +125,17 @@ export type Database = {
           name?: string
           updated_at?: string
           user_id?: string
+          workspace_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "collections_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       item_chunks: {
         Row: {
@@ -235,6 +246,7 @@ export type Database = {
           transcript: string | null
           updated_at: string
           user_id: string
+          workspace_id: string | null
         }
         Insert: {
           content_hash?: string | null
@@ -264,6 +276,7 @@ export type Database = {
           transcript?: string | null
           updated_at?: string
           user_id: string
+          workspace_id?: string | null
         }
         Update: {
           content_hash?: string | null
@@ -293,8 +306,17 @@ export type Database = {
           transcript?: string | null
           updated_at?: string
           user_id?: string
+          workspace_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "items_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       organize_runs: {
         Row: {
@@ -328,6 +350,8 @@ export type Database = {
       }
       profiles: {
         Row: {
+          ai_auto_analyze: boolean
+          ai_mode: string
           avatar_url: string | null
           created_at: string
           display_name: string | null
@@ -335,6 +359,8 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          ai_auto_analyze?: boolean
+          ai_mode?: string
           avatar_url?: string | null
           created_at?: string
           display_name?: string | null
@@ -342,6 +368,8 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          ai_auto_analyze?: boolean
+          ai_mode?: string
           avatar_url?: string | null
           created_at?: string
           display_name?: string | null
@@ -401,11 +429,89 @@ export type Database = {
           },
         ]
       }
+      workspace_members: {
+        Row: {
+          created_at: string
+          id: string
+          role: string
+          user_id: string
+          workspace_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role?: string
+          user_id: string
+          workspace_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: string
+          user_id?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workspace_members_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workspaces: {
+        Row: {
+          accent: string | null
+          ai_allowed: boolean
+          created_at: string
+          icon: string | null
+          id: string
+          is_default: boolean
+          kind: string
+          name: string
+          owner_id: string
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          accent?: string | null
+          ai_allowed?: boolean
+          created_at?: string
+          icon?: string | null
+          id?: string
+          is_default?: boolean
+          kind?: string
+          name: string
+          owner_id: string
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          accent?: string | null
+          ai_allowed?: boolean
+          created_at?: string
+          icon?: string | null
+          id?: string
+          is_default?: boolean
+          kind?: string
+          name?: string
+          owner_id?: string
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      has_workspace_access: {
+        Args: { _user_id: string; _workspace_id: string }
+        Returns: boolean
+      }
       match_item_chunks: {
         Args: {
           filter_collection_id?: string
