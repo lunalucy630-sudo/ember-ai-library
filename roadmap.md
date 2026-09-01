@@ -28,3 +28,10 @@
 - [ ] "Leave Workshop" revokes access without deleting content
 
 ## Phase 11 — Polish
+
+## Design system (folded into Phase 11, tokens landed early)
+- [ ] Tinted dark mode: layered warm surfaces (background / surface / elevated / card / hover / active), no pure black, no neon or heavy glow
+- [ ] Semantic tokens: surface-*, border-subtle, text-primary/secondary/muted, accent-hover/soft, success/warning/error — light + dark values in src/styles.css
+- [ ] Components reference tokens only (no hex, no bg-black/text-white)
+- [ ] Workshop identity: deep plum / muted violet / dusky wine / warm parchment, tinted dark, artwork stays the focus
+- [ ] Audit both themes: inputs, dialogs, dropdowns, nav, hover/selected, empty + loading states, media previews
