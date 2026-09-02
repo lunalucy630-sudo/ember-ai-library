@@ -56,20 +56,38 @@ export const exportLibrary = createServerFn({ method: "GET" })
       });
     }
 
-    const strip = <T extends Record<string, unknown>>(rows: T[] | null) =>
-      (rows ?? []).map(({ user_id: _u, ...rest }) => rest);
+    type Json = string | number | boolean | null | Json[] | { [k: string]: Json };
+    type Row = { [k: string]: Json };
+    const strip = (rows: unknown[] | null): Row[] =>
+      (rows ?? []).map((r) => {
+        const { user_id: _u, ...rest } = r as Record<string, Json>;
+        return rest as Row;
+      });
 
-    return {
+    const payload: {
+      format: string;
+      version: number;
+      exportedAt: string;
+      profile: { display_name: string | null; ai_mode: string; ai_auto_analyze: boolean } | null;
+      items: Row[];
+      collections: Row[];
+      itemCollections: Row[];
+      relatedResources: Row[];
+      chatThreads: Row[];
+      chatMessages: Row[];
+      files: ExportFile[];
+    } = {
       format: "ember-export",
       version: 1,
       exportedAt: new Date().toISOString(),
       profile: profile.data ?? null,
-      items: strip(items.data as Record<string, unknown>[] | null),
-      collections: strip(collections.data as Record<string, unknown>[] | null),
-      itemCollections: links.data ?? [],
-      relatedResources: strip(related.data as Record<string, unknown>[] | null),
-      chatThreads: strip(threads.data as Record<string, unknown>[] | null),
-      chatMessages: strip(messages.data as Record<string, unknown>[] | null),
+      items: strip(items.data),
+      collections: strip(collections.data),
+      itemCollections: strip(links.data),
+      relatedResources: strip(related.data),
+      chatThreads: strip(threads.data),
+      chatMessages: strip(messages.data),
       files,
     };
+    return payload;
   });
