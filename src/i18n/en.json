@@ -252,5 +252,17 @@
     "audio": "Audio",
     "note": "Notes",
     "link": "Links"
+  },
+  "export": {
+    "full": "Export everything (files + data)",
+    "dataOnly": "Export data only (JSON + Markdown)",
+    "preparing": "Preparing export…",
+    "progress": "Downloading files {{done}}/{{total}}",
+    "done_one": "Exported {{count}} item.",
+    "done_other": "Exported {{count}} items.",
+    "partial_one": "Export saved, but {{count}} file couldn't be downloaded.",
+    "partial_other": "Export saved, but {{count}} files couldn't be downloaded.",
+    "failed": "Export failed.",
+    "hint": "Your library belongs to you. The bundle contains every item, collection, tag, note, transcript and original file — ready to move anywhere."
   }
 }

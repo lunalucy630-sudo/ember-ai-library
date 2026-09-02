@@ -10,6 +10,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
 import { CreateCollectionDialog } from "./CreateCollectionDialog";
 import { LangThemeSwitcher } from "./LangThemeSwitcher";
+import { ExportLibraryButton } from "./ExportLibraryButton";
 import { useTranslation } from "react-i18next";
 
 export function AppShell({ children }: { children: ReactNode }) {
@@ -144,6 +145,7 @@ function SidebarContent() {
       </div>
 
       <div className="mt-auto space-y-2 pt-6">
+        <ExportLibraryButton compact />
         <LangThemeSwitcher />
         <button
           onClick={signOut}
