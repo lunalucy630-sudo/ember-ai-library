@@ -254,5 +254,19 @@
     "audio": "Audio",
     "note": "Notițe",
     "link": "Linkuri"
+  },
+  "export": {
+    "full": "Exportă tot (fișiere + date)",
+    "dataOnly": "Exportă doar datele (JSON + Markdown)",
+    "preparing": "Se pregătește exportul…",
+    "progress": "Se descarcă fișierele {{done}}/{{total}}",
+    "done_one": "Un element exportat.",
+    "done_few": "{{count}} elemente exportate.",
+    "done_other": "{{count}} de elemente exportate.",
+    "partial_one": "Export salvat, dar un fișier nu a putut fi descărcat.",
+    "partial_few": "Export salvat, dar {{count}} fișiere nu au putut fi descărcate.",
+    "partial_other": "Export salvat, dar {{count}} de fișiere nu au putut fi descărcate.",
+    "failed": "Exportul a eșuat.",
+    "hint": "Biblioteca ta îți aparține. Arhiva conține fiecare element, colecție, etichetă, notiță, transcriere și fișier original — gata de mutat oriunde."
   }
 }
