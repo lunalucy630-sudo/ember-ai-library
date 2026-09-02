@@ -79,9 +79,9 @@ export const updateAiSettings = createServerFn({ method: "POST" })
       .parse(input),
   )
   .handler(async ({ data, context }) => {
-    const patch: Record<string, unknown> = {};
-    if (data.aiMode) patch["ai_mode"] = data.aiMode;
-    if (typeof data.autoAnalyze === "boolean") patch["ai_auto_analyze"] = data.autoAnalyze;
+    const patch: { ai_mode?: string; ai_auto_analyze?: boolean } = {};
+    if (data.aiMode) patch.ai_mode = data.aiMode;
+    if (typeof data.autoAnalyze === "boolean") patch.ai_auto_analyze = data.autoAnalyze;
     if (Object.keys(patch).length === 0) return { ok: true };
 
     const { error } = await context.supabase
