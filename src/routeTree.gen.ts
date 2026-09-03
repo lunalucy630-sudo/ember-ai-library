@@ -12,7 +12,9 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedWorkshopRouteImport } from './routes/_authenticated/workshop'
 import { Route as AuthenticatedUploadRouteImport } from './routes/_authenticated/upload'
+import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedSearchRouteImport } from './routes/_authenticated/search'
 import { Route as AuthenticatedLibraryRouteImport } from './routes/_authenticated/library'
 import { Route as AuthenticatedChatRouteImport } from './routes/_authenticated/chat'
@@ -35,9 +37,19 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedWorkshopRoute = AuthenticatedWorkshopRouteImport.update({
+  id: '/workshop',
+  path: '/workshop',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedUploadRoute = AuthenticatedUploadRouteImport.update({
   id: '/upload',
   path: '/upload',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedSearchRoute = AuthenticatedSearchRouteImport.update({
@@ -84,7 +96,9 @@ export interface FileRoutesByFullPath {
   '/chat': typeof AuthenticatedChatRouteWithChildren
   '/library': typeof AuthenticatedLibraryRoute
   '/search': typeof AuthenticatedSearchRoute
+  '/settings': typeof AuthenticatedSettingsRoute
   '/upload': typeof AuthenticatedUploadRoute
+  '/workshop': typeof AuthenticatedWorkshopRoute
   '/chat/$threadId': typeof AuthenticatedChatThreadIdRoute
   '/collection/$id': typeof AuthenticatedCollectionIdRoute
   '/item/$id': typeof AuthenticatedItemIdRoute
@@ -95,7 +109,9 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/library': typeof AuthenticatedLibraryRoute
   '/search': typeof AuthenticatedSearchRoute
+  '/settings': typeof AuthenticatedSettingsRoute
   '/upload': typeof AuthenticatedUploadRoute
+  '/workshop': typeof AuthenticatedWorkshopRoute
   '/chat/$threadId': typeof AuthenticatedChatThreadIdRoute
   '/collection/$id': typeof AuthenticatedCollectionIdRoute
   '/item/$id': typeof AuthenticatedItemIdRoute
@@ -109,7 +125,9 @@ export interface FileRoutesById {
   '/_authenticated/chat': typeof AuthenticatedChatRouteWithChildren
   '/_authenticated/library': typeof AuthenticatedLibraryRoute
   '/_authenticated/search': typeof AuthenticatedSearchRoute
+  '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/upload': typeof AuthenticatedUploadRoute
+  '/_authenticated/workshop': typeof AuthenticatedWorkshopRoute
   '/_authenticated/chat/$threadId': typeof AuthenticatedChatThreadIdRoute
   '/_authenticated/collection/$id': typeof AuthenticatedCollectionIdRoute
   '/_authenticated/item/$id': typeof AuthenticatedItemIdRoute
@@ -123,7 +141,9 @@ export interface FileRouteTypes {
     | '/chat'
     | '/library'
     | '/search'
+    | '/settings'
     | '/upload'
+    | '/workshop'
     | '/chat/$threadId'
     | '/collection/$id'
     | '/item/$id'
@@ -134,7 +154,9 @@ export interface FileRouteTypes {
     | '/auth'
     | '/library'
     | '/search'
+    | '/settings'
     | '/upload'
+    | '/workshop'
     | '/chat/$threadId'
     | '/collection/$id'
     | '/item/$id'
@@ -147,7 +169,9 @@ export interface FileRouteTypes {
     | '/_authenticated/chat'
     | '/_authenticated/library'
     | '/_authenticated/search'
+    | '/_authenticated/settings'
     | '/_authenticated/upload'
+    | '/_authenticated/workshop'
     | '/_authenticated/chat/$threadId'
     | '/_authenticated/collection/$id'
     | '/_authenticated/item/$id'
@@ -183,11 +207,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/workshop': {
+      id: '/_authenticated/workshop'
+      path: '/workshop'
+      fullPath: '/workshop'
+      preLoaderRoute: typeof AuthenticatedWorkshopRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/upload': {
       id: '/_authenticated/upload'
       path: '/upload'
       fullPath: '/upload'
       preLoaderRoute: typeof AuthenticatedUploadRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/settings': {
+      id: '/_authenticated/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AuthenticatedSettingsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/search': {
@@ -259,7 +297,9 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedChatRoute: typeof AuthenticatedChatRouteWithChildren
   AuthenticatedLibraryRoute: typeof AuthenticatedLibraryRoute
   AuthenticatedSearchRoute: typeof AuthenticatedSearchRoute
+  AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedUploadRoute: typeof AuthenticatedUploadRoute
+  AuthenticatedWorkshopRoute: typeof AuthenticatedWorkshopRoute
   AuthenticatedCollectionIdRoute: typeof AuthenticatedCollectionIdRoute
   AuthenticatedItemIdRoute: typeof AuthenticatedItemIdRoute
 }
@@ -268,7 +308,9 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedChatRoute: AuthenticatedChatRouteWithChildren,
   AuthenticatedLibraryRoute: AuthenticatedLibraryRoute,
   AuthenticatedSearchRoute: AuthenticatedSearchRoute,
+  AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedUploadRoute: AuthenticatedUploadRoute,
+  AuthenticatedWorkshopRoute: AuthenticatedWorkshopRoute,
   AuthenticatedCollectionIdRoute: AuthenticatedCollectionIdRoute,
   AuthenticatedItemIdRoute: AuthenticatedItemIdRoute,
 }
