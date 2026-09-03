@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedWorkshopRouteImport } from './routes/_authenticated/workshop'
 import { Route as AuthenticatedUploadRouteImport } from './routes/_authenticated/upload'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedSearchRouteImport } from './routes/_authenticated/search'
@@ -35,6 +36,11 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedWorkshopRoute = AuthenticatedWorkshopRouteImport.update({
+  id: '/workshop',
+  path: '/workshop',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedUploadRoute = AuthenticatedUploadRouteImport.update({
   id: '/upload',
@@ -92,6 +98,7 @@ export interface FileRoutesByFullPath {
   '/search': typeof AuthenticatedSearchRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/upload': typeof AuthenticatedUploadRoute
+  '/workshop': typeof AuthenticatedWorkshopRoute
   '/chat/$threadId': typeof AuthenticatedChatThreadIdRoute
   '/collection/$id': typeof AuthenticatedCollectionIdRoute
   '/item/$id': typeof AuthenticatedItemIdRoute
@@ -104,6 +111,7 @@ export interface FileRoutesByTo {
   '/search': typeof AuthenticatedSearchRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/upload': typeof AuthenticatedUploadRoute
+  '/workshop': typeof AuthenticatedWorkshopRoute
   '/chat/$threadId': typeof AuthenticatedChatThreadIdRoute
   '/collection/$id': typeof AuthenticatedCollectionIdRoute
   '/item/$id': typeof AuthenticatedItemIdRoute
@@ -119,6 +127,7 @@ export interface FileRoutesById {
   '/_authenticated/search': typeof AuthenticatedSearchRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/upload': typeof AuthenticatedUploadRoute
+  '/_authenticated/workshop': typeof AuthenticatedWorkshopRoute
   '/_authenticated/chat/$threadId': typeof AuthenticatedChatThreadIdRoute
   '/_authenticated/collection/$id': typeof AuthenticatedCollectionIdRoute
   '/_authenticated/item/$id': typeof AuthenticatedItemIdRoute
@@ -134,6 +143,7 @@ export interface FileRouteTypes {
     | '/search'
     | '/settings'
     | '/upload'
+    | '/workshop'
     | '/chat/$threadId'
     | '/collection/$id'
     | '/item/$id'
@@ -146,6 +156,7 @@ export interface FileRouteTypes {
     | '/search'
     | '/settings'
     | '/upload'
+    | '/workshop'
     | '/chat/$threadId'
     | '/collection/$id'
     | '/item/$id'
@@ -160,6 +171,7 @@ export interface FileRouteTypes {
     | '/_authenticated/search'
     | '/_authenticated/settings'
     | '/_authenticated/upload'
+    | '/_authenticated/workshop'
     | '/_authenticated/chat/$threadId'
     | '/_authenticated/collection/$id'
     | '/_authenticated/item/$id'
@@ -194,6 +206,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/workshop': {
+      id: '/_authenticated/workshop'
+      path: '/workshop'
+      fullPath: '/workshop'
+      preLoaderRoute: typeof AuthenticatedWorkshopRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/upload': {
       id: '/_authenticated/upload'
@@ -280,6 +299,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSearchRoute: typeof AuthenticatedSearchRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedUploadRoute: typeof AuthenticatedUploadRoute
+  AuthenticatedWorkshopRoute: typeof AuthenticatedWorkshopRoute
   AuthenticatedCollectionIdRoute: typeof AuthenticatedCollectionIdRoute
   AuthenticatedItemIdRoute: typeof AuthenticatedItemIdRoute
 }
@@ -290,6 +310,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSearchRoute: AuthenticatedSearchRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedUploadRoute: AuthenticatedUploadRoute,
+  AuthenticatedWorkshopRoute: AuthenticatedWorkshopRoute,
   AuthenticatedCollectionIdRoute: AuthenticatedCollectionIdRoute,
   AuthenticatedItemIdRoute: AuthenticatedItemIdRoute,
 }
